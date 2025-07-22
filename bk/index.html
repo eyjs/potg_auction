@@ -21,9 +21,17 @@
       <div id="masterPage" class="page-container">
         <header class="page-header">
           <h1 class="page-title">마스터 페이지</h1>
-          <div class="header-right">
-            <span class="user-display">로그인: <span id="masterUsernameDisplay"></span></span>
-            <button id="logoutBtnMaster" class="logout-btn">로그아웃</button>
+          <div>
+            <div class="header-right">
+              <span class="user-display">로그인: <span id="masterUsernameDisplay"></span></span>
+            </div>
+            <div>
+              <button id="goToAuctionPageBtn" class="secondary-btn" style="margin-right: 10px; display: inline-block">
+                경매 페이지로 이동
+              </button>
+              </button>
+              <button id="logoutBtnMaster" class="logout-btn">로그아웃</button>
+            </div>
           </div>
         </header>
         <main class="master-main-grid">
@@ -98,17 +106,14 @@
             </div>
             <p id="unbidItemAssignMessageMasterPage" class="message"></p>
           </section>
-
+          <section class="master-section">
+            <h2>변수값</h2>
+          </section>
           <section class="master-section auction-controls-section">
             <h2>경매 컨트롤</h2>
             <div id="auctionMasterControls" class="auction-master-controls">
-              <button id="masterStartAuctionBtn" class="control-btn green">경매 시작</button>
-              <button id="masterNextAuctionBtn" class="control-btn blue">다음 매물</button>
-              <button id="masterStopAuctionBtn" class="control-btn red">경매 중지</button>
-              <button id="addTimeBtnMaster" class="control-btn orange">+10초</button>
               <p id="auctionMasterMessage" class="message"></p>
             </div>
-            <button id="goToAuctionPageBtn" class="primary-btn full-width">경매 페이지로 이동</button>
           </section>
         </main>
       </div>
@@ -116,11 +121,16 @@
       <div id="auctionPage" class="page-container">
         <header class="page-header">
           <h1 class="page-title">경매 진행</h1>
-          <div class="header-right">
+       <div>
+        <div class="header-right">
             <span class="user-display">로그인: <span id="auctionUsernameDisplay"></span></span>
-            <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">관리자 패널로 이동</button>
+          </div>
+          <div>
+             <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">관리자 패널로 이동</button>
             <button id="logoutBtnAuction" class="logout-btn">로그아웃</button>
           </div>
+        </div>
+
         </header>
         <main class="auction-main-grid">
           <section class="auction-panel team-list-area">
@@ -154,6 +164,7 @@
               <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
               <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
               <button id="auctionPageStopAuctionBtn" class="control-btn red">경매 중지</button>
+              <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
               <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
               <p id="auctionPageMasterMessage" class="message"></p>
             </div>

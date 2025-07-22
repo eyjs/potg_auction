@@ -73,9 +73,6 @@ const addItemBtn = document.getElementById('addItemBtn');
 const addItemMessage = document.getElementById('addItemMessage');
 const registeredItemsList = document.getElementById('registeredItemsList');
 
-const masterStartAuctionBtn = document.getElementById('masterStartAuctionBtn');
-const masterStopAuctionBtn = document.getElementById('masterStopAuctionBtn');
-const masterNextAuctionBtn = document.getElementById('masterNextAuctionBtn');
 const auctionMasterMessage = document.getElementById('auctionMasterMessage');
 
 const teamListContainer = document.getElementById('teamListContainer');
@@ -92,6 +89,7 @@ const auctionPageMasterControls = document.getElementById('auctionPageMasterCont
 const auctionPageStartAuctionBtn = document.getElementById('auctionPageStartAuctionBtn');
 const auctionPageNextAuctionBtn = document.getElementById('auctionPageNextAuctionBtn');
 const auctionPageStopAuctionBtn = document.getElementById('auctionPageStopAuctionBtn');
+const auctionPageEndAuctionBtn = document.getElementById('auctionPageEndAuctionBtn');
 const auctionPageMasterMessage = document.getElementById('auctionPageMasterMessage');
 
 const participantGrid = document.getElementById('participantGrid');
@@ -608,6 +606,15 @@ function handleStartAuction(messageElement) {
   renderAuctionPage();
 }
 
+function handleEndAuction() {
+  if (auctionState.intervalId) clearInterval(auctionState.intervalId);
+
+  auctionState = { ...auctionState, isAuctionRunning: true, isAuctionPaused: true, currentAuctionItemIndex: -1 };
+
+  endAuction();
+  messageElement.textContent = '경매가 종료되었습니다. 유찰을 클릭하세요.';
+  messageElement.classList.add('green');
+}
 function handleStopAuction(messageElement) {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
 
@@ -652,12 +659,9 @@ function handleNextAuction() {
   startNextAuction();
 }
 
-masterStartAuctionBtn.addEventListener('click', () => handleStartAuction(auctionMasterMessage));
-masterStopAuctionBtn.addEventListener('click', () => handleStopAuction(auctionMasterMessage));
-masterNextAuctionBtn.addEventListener('click', handleNextAuction);
-
 auctionPageStartAuctionBtn.addEventListener('click', () => handleStartAuction(auctionPageMasterMessage));
 auctionPageStopAuctionBtn.addEventListener('click', () => handleStopAuction(auctionPageMasterMessage));
+auctionPageEndAuctionBtn.addEventListener('click', () => handleEndAuction(auctionPageMasterMessage));
 auctionPageNextAuctionBtn.addEventListener('click', handleNextAuction);
 
 function updateAuctionControls() {
@@ -666,9 +670,9 @@ function updateAuctionControls() {
   const canStop = auctionState.isAuctionRunning;
   const canNext = auctionState.isAuctionRunning && auctionState.isAuctionPaused && !isEnded;
 
-  [masterStartAuctionBtn, auctionPageStartAuctionBtn].forEach((btn) => (btn.disabled = !canStart));
-  [masterStopAuctionBtn, auctionPageStopAuctionBtn].forEach((btn) => (btn.disabled = !canStop));
-  [masterNextAuctionBtn, auctionPageNextAuctionBtn].forEach((btn) => (btn.disabled = !canNext));
+  [auctionPageStartAuctionBtn].forEach((btn) => (btn.disabled = !canStart));
+  [auctionPageStopAuctionBtn].forEach((btn) => (btn.disabled = !canStop));
+  [auctionPageNextAuctionBtn].forEach((btn) => (btn.disabled = !canNext));
 }
 
 function startNextAuction() {
@@ -745,6 +749,17 @@ function handleAuctionEndRound() {
 function endAuction() {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
   auctionState.isAuctionRunning = false;
+
+  if (items.map((item) => item.status === 'pending')) {
+    items.forEach((item) => {
+      if (item.status === 'pending') {
+        item.status = 'unsold';
+        item.bidderTeamId = null;
+        item.bidPrice = 0;
+      }
+    });
+  }
+
   saveData();
   alert('모든 경매가 종료되었습니다.');
   renderAuctionPage();
