@@ -1,0 +1,960 @@
+/* Variables for consistent theming */
+:root {
+  --primary-bg: #222831; /* Dark Grey */
+  --secondary-bg: #393e46; /* Medium Grey */
+  --accent-color: #00adb5; /* Teal Blue */
+  --text-color: #eeeeee; /* Light Grey */
+  --light-grey-text: #cccccc;
+  --border-color: #4a4f57; /* Slightly lighter than secondary-bg */
+  --success-color: #28a745; /* Green */
+  --warning-color: #ffc107; /* Yellow */
+  --danger-color: #dc3545; /* Red */
+  --info-color: #17a2b8; /* Cyan */
+  --shadow-color: rgba(0, 0, 0, 0.25);
+  --hover-color: #008c90; /* Darker Teal */
+}
+
+body {
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--primary-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: var(--text-color);
+  overflow-y: auto;
+}
+
+.app-container {
+  background-color: var(--secondary-bg);
+  border-radius: 15px;
+  box-shadow: 0 10px 30px var(--shadow-color);
+  width: 100%;
+  max-width: 1400px; /* Wider for 3-column layout */
+  margin: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* For proper page stacking */
+  min-height: calc(100vh - 40px);
+}
+
+.page-container {
+  display: none;
+  flex-grow: 1; /* Allow content to fill space */
+}
+
+.page-container.active {
+  display: flex; /* Use flex for main content within page */
+  flex-direction: column;
+}
+
+/* --- Shared Header Styles --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.8em;
+  color: var(--accent-color);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-display {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--light-grey-text);
+}
+
+.logout-btn {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: darken(var(--danger-color), 10%);
+}
+
+/* --- Login Page --- */
+.login-box {
+  padding: 50px;
+  background-color: var(--primary-bg);
+  border-radius: 15px;
+  box-shadow: 0 8px 20px var(--shadow-color);
+  width: 400px;
+  margin: auto; /* Center vertically and horizontally */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-box h2 {
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  font-size: 2.5em;
+  text-shadow: 0 0 5px rgba(0, 173, 181, 0.5);
+}
+
+.login-box input {
+  width: calc(100% - 20px);
+  padding: 15px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1.1em;
+  background-color: var(--secondary-bg);
+  color: var(--text-color);
+  outline: none;
+}
+
+.login-box input::placeholder {
+  color: var(--light-grey-text);
+}
+
+.login-box button {
+  padding: 15px;
+  background-color: var(--accent-color);
+  color: var(--primary-bg);
+  border: none;
+  border-radius: 8px;
+  font-size: 1.3em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: bold;
+}
+
+.login-box button:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+.message {
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 0.95em;
+  color: var(--light-grey-text);
+}
+
+.message.red {
+  color: var(--danger-color);
+}
+.message.green {
+  color: var(--success-color);
+}
+.message.orange {
+  color: var(--warning-color);
+}
+
+/* --- Master Page --- */
+.master-main-grid {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Adjusted for more columns */
+  gap: 30px;
+  flex-grow: 1; /* Allows main content to fill remaining space */
+}
+
+.master-section {
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.master-section h2 {
+  color: var(--accent-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+  font-size: 1.7em;
+}
+
+.master-section h3 {
+  color: var(--light-grey-text);
+  margin-top: 25px;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.input-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.input-group input {
+  flex: 1;
+  min-width: 180px;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1em;
+  background-color: var(--secondary-bg);
+  color: var(--text-color);
+}
+.input-group input::placeholder {
+  color: var(--light-grey-text);
+}
+
+/* Primary Button (General action buttons) */
+.primary-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  background-color: var(--accent-color);
+  color: var(--primary-bg);
+  font-weight: bold;
+}
+.primary-btn:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-1px);
+}
+.primary-btn.full-width {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Secondary Button (e.g., scaffold) */
+.secondary-btn {
+  padding: 12px 20px;
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  background-color: transparent;
+  color: var(--accent-color);
+  font-weight: bold;
+  margin-top: 10px;
+}
+.secondary-btn:hover {
+  background-color: var(--accent-color);
+  color: var(--primary-bg);
+  transform: translateY(-1px);
+}
+.secondary-btn.full-width {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.list-display {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+  max-height: 250px; /* Constrain height */
+  overflow-y: auto; /* Scroll for long lists */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--secondary-bg);
+}
+
+.list-display li {
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95em;
+  color: var(--text-color);
+}
+.list-display li:last-child {
+  border-bottom: none;
+}
+
+.list-display li button.delete {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85em;
+  transition: background-color 0.3s ease;
+}
+
+.list-display li button.delete:hover {
+  background-color: darken(var(--danger-color), 10%);
+}
+
+/* Master Auction Controls */
+.auction-master-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--secondary-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.auction-master-controls .control-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  min-width: 120px;
+  color: var(--primary-bg);
+  font-weight: bold;
+}
+.auction-master-controls .control-btn.green {
+  background-color: var(--success-color);
+}
+.auction-master-controls .control-btn.blue {
+  background-color: var(--info-color);
+}
+.auction-master-controls .control-btn.red {
+  background-color: var(--danger-color);
+}
+
+.auction-master-controls .control-btn.green:hover:not(:disabled) {
+  background-color: darken(var(--success-color), 10%);
+  transform: translateY(-1px);
+}
+.auction-master-controls .control-btn.blue:hover:not(:disabled) {
+  background-color: darken(var(--info-color), 10%);
+  transform: translateY(-1px);
+}
+.auction-master-controls .control-btn.red:hover:not(:disabled) {
+  background-color: darken(var(--danger-color), 10%);
+  transform: translateY(-1px);
+}
+
+.auction-master-controls .control-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+.auction-master-controls .message {
+  flex-basis: 100%;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* --- Drag & Drop Styles --- */
+.dnd-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.dnd-list-box {
+  flex: 1;
+  min-width: 280px;
+  border: 2px dashed var(--accent-color);
+  border-radius: 10px;
+  padding: 15px;
+  background-color: var(--primary-bg);
+}
+
+.dnd-list-box h3 {
+  text-align: center;
+  color: var(--accent-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
+.dnd-list {
+  list-style: none;
+  padding: 0;
+  min-height: 150px;
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+}
+
+.draggable-user,
+.draggable-item {
+  padding: 12px;
+  margin: 8px;
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: grab;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.draggable-user:hover,
+.draggable-item:hover {
+  background-color: #3f444c; /* Slightly lighter primary */
+  box-shadow: 0 0 10px rgba(0, 173, 181, 0.3);
+}
+
+.dnd-team-item {
+  padding: 12px;
+  margin: 8px;
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  color: var(--text-color);
+}
+
+.dnd-team-item.drag-over {
+  background-color: #3f444c; /* Highlight for drag-over */
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px rgba(0, 173, 181, 0.5);
+}
+
+.description {
+  font-size: 0.9em;
+  color: var(--light-grey-text);
+  margin-bottom: 15px;
+}
+
+/* Unbid Item Assignment Section on Master Page (Original position) */
+#unbidItemAssignmentSection {
+  /* styles are handled by .master-section */
+  display: none; /* Hidden by default, shown by JS */
+}
+
+/* --- Auction Page --- */
+.auction-main-grid {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1.2fr 2fr 1fr; /* Left, Center, Right columns */
+  grid-template-rows: auto 1fr auto; /* Header, Content, Footer (results) */
+  gap: 25px;
+  flex-grow: 1;
+  grid-template-areas:
+    'team-list-area auction-item-area participant-grid-area'
+    'team-list-area auction-item-area participant-grid-area'
+    'auction-results-section auction-results-section auction-results-section'; /* Results span all columns */
+}
+
+.auction-panel {
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.auction-panel h2 {
+  color: var(--accent-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+  font-size: 1.7em;
+  text-align: center;
+}
+
+/* Left: Team List Area */
+.team-list-area {
+  grid-area: team-list-area;
+}
+
+.team-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.team-item {
+  display: flex;
+  flex-direction: column; /* Stack name/points/slots vertically */
+  align-items: center;
+  background-color: #343a40; /* Darker than primary for team items */
+  border: 1px solid #495057;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.team-item:hover {
+  transform: translateY(-3px);
+}
+
+.team-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--accent-color); /* Default */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.6em;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 3px solid transparent; /* To be set by JS */
+  box-shadow: 0 0 10px rgba(0, 173, 181, 0.4);
+}
+.team-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+} /* For DiceBear avatars */
+
+.team-info {
+  flex-grow: 1;
+  width: 100%; /* Take full width for text alignment */
+}
+
+.team-name {
+  font-weight: bold;
+  color: var(--accent-color);
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+.team-points {
+  font-size: 1em;
+  color: var(--text-color);
+  margin-top: 3px;
+  font-weight: bold;
+}
+
+.team-slots {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+  justify-content: center; /* Center the slots below team info */
+  flex-wrap: wrap;
+}
+
+.slot-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #6c757d; /* Grey for empty slot */
+  border: 1px solid #495057;
+  transition: background-color 0.3s ease;
+}
+
+.slot-indicator.filled {
+  background-color: var(--success-color); /* Green for filled slot */
+  border-color: darken(var(--success-color), 10%);
+}
+
+/* Center: Auction Item Area */
+.auction-item-area {
+  grid-area: auction-item-area;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push bid button to bottom */
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+}
+
+.no-item-message {
+  font-size: 1.5em;
+  color: var(--light-grey-text);
+  margin: auto; /* Center in the flex container */
+}
+
+.auction-item-box {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.item-visual-area {
+  width: 100%;
+  max-width: 300px;
+  height: 250px; /* Fixed height for consistent layout */
+  background-color: var(--secondary-bg);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.auction-item-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Keep aspect ratio and fit inside */
+  border-radius: 8px;
+}
+
+.item-info-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+#currentItemName {
+  font-size: 2.2em;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px rgba(0, 173, 181, 0.3);
+}
+
+#currentItemDescription {
+  font-size: 1.2em;
+  color: var(--light-grey-text);
+  margin-bottom: 20px;
+}
+
+.bid-info {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 20px 30px;
+  font-size: 1.3em;
+  color: var(--text-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.bid-info p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.bid-info span {
+  color: var(--warning-color); /* Yellow for bid value */
+  font-size: 1.1em;
+}
+
+.time-count {
+  font-size: 2em;
+  color: var(--success-color);
+  font-weight: bold;
+  margin-top: 15px;
+  letter-spacing: 1px;
+}
+
+.bid-button {
+  background-color: var(--accent-color);
+  color: var(--primary-bg);
+  border: none;
+  padding: 18px 40px;
+  border-radius: 12px;
+  font-size: 1.6em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 90%;
+  max-width: 350px;
+  margin-top: 30px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(0, 173, 181, 0.4);
+}
+
+.bid-button:hover:not(:disabled) {
+  background-color: var(--hover-color);
+  transform: translateY(-3px);
+}
+
+.bid-button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Right: Participant Grid Area */
+.participant-grid-area {
+  grid-area: participant-grid-area;
+}
+
+.participant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* Larger avatars */
+  gap: 15px;
+  justify-content: center;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 5px; /* Add some padding for scrolling */
+}
+
+.participant-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #555; /* Default background if no image */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8em;
+  color: white;
+  font-weight: bold;
+  border: 4px solid transparent; /* Default transparent border */
+  transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  overflow: hidden; /* For DiceBear avatars */
+}
+.participant-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+} /* For DiceBear images */
+.participant-avatar:hover {
+  transform: scale(1.05);
+}
+
+/* Specific border colors for participant roles/status */
+.participant-avatar.border-general {
+  border-color: #7f8c8d; /* Grey */
+}
+
+.participant-avatar.border-team-leader {
+  border-color: #f1c40f; /* Yellow */
+}
+
+.participant-avatar.border-auction-item {
+  border-color: var(--success-color); /* Green for current auction item */
+  box-shadow: 0 0 15px rgba(40, 167, 69, 0.6); /* Highlight active auction item */
+}
+
+.participant-avatar.active-bidder {
+  border-color: var(--danger-color); /* Red for highest bidder */
+  box-shadow: 0 0 18px rgba(220, 53, 69, 0.8); /* Stronger highlight */
+  animation: pulse-bidder 1s infinite alternate;
+}
+
+@keyframes pulse-bidder {
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 18px rgba(220, 53, 69, 0.8);
+  }
+  to {
+    transform: scale(1.08);
+    box-shadow: 0 0 25px rgba(220, 53, 69, 1);
+  }
+}
+
+/* --- Auction Results Section --- */
+.auction-results-section {
+  grid-area: auction-results-section; /* Spans all 3 columns */
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px;
+  margin-top: 25px; /* Space from above sections */
+  box-shadow: 0 5px 15px var(--shadow-color);
+  text-align: center;
+  display: none; /* Hidden by default */
+}
+
+.auction-results-section h2 {
+  color: var(--accent-color);
+  font-size: 2em;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.auction-results-section p {
+  font-size: 1.1em;
+  color: var(--light-grey-text);
+  margin-bottom: 30px;
+}
+
+.button-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.download-btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: var(--primary-bg);
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.download-btn.yellow {
+  background-color: #f1c40f;
+} /* Sun Flower */
+.download-btn.yellow:hover {
+  background-color: #f39c12;
+  transform: translateY(-2px);
+}
+
+.download-btn.purple {
+  background-color: #9b59b6;
+} /* Amethyst */
+.download-btn.purple:hover {
+  background-color: #8e44ad;
+  transform: translateY(-2px);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+  .auction-main-grid {
+    grid-template-columns: 1fr 2fr; /* Two columns: Team List | Auction Item + Participant */
+    grid-template-areas:
+      'team-list-area auction-item-area'
+      'team-list-area participant-grid-area'
+      'auction-results-section auction-results-section';
+  }
+  .participant-grid-area {
+    grid-area: participant-grid-area; /* Explicitly set for smaller screens */
+  }
+  .master-main-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 850px) {
+  .app-container {
+    margin: 10px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+  }
+  .page-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+    gap: 10px;
+  }
+  .page-title {
+    font-size: 1.5em;
+  }
+  .login-box {
+    width: 90%;
+    margin: 30px auto;
+    padding: 30px;
+  }
+  .login-box h2 {
+    font-size: 2em;
+  }
+
+  /* Stack sections on smaller screens */
+  .auction-main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'auction-item-area'
+      'team-list-area'
+      'participant-grid-area'
+      'auction-results-section';
+    gap: 20px;
+  }
+  .master-main-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .master-section,
+  .auction-panel,
+  .auction-results-section {
+    padding: 20px;
+    border-radius: 10px;
+  }
+  .master-section h2,
+  .auction-panel h2,
+  .auction-results-section h2 {
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+  }
+  .input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .input-group input {
+    width: calc(100% - 24px); /* Account for padding */
+  }
+  .primary-btn,
+  .secondary-btn {
+    padding: 10px 15px;
+    font-size: 0.95em;
+  }
+  .auction-master-controls .control-btn {
+    flex: 1 1 auto;
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 1em;
+  }
+  .auction-master-controls {
+    flex-direction: column;
+  }
+  .bid-button {
+    padding: 15px 25px;
+    font-size: 1.3em;
+    width: 100%;
+  }
+  .download-btn {
+    padding: 12px 20px;
+    font-size: 1.1em;
+  }
+  .dnd-container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  .dnd-list-box {
+    min-width: unset;
+  }
+  .team-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.4em;
+  }
+  .participant-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5em;
+  }
+  .team-item {
+    padding: 12px;
+  }
+}
