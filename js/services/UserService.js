@@ -35,4 +35,7 @@ export class UserService {
   save() {
     StorageService.save('users', this.users);
   }
+  findByCredentials(username, password) {
+    return this.users.find((u) => u.username === username && u.password === password);
+  }
 }

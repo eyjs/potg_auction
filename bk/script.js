@@ -647,7 +647,7 @@ function startNextAuction() {
       currentAuctionItemIndex: nextItemIndex,
       currentBid: 0,
       currentBidderTeamId: null,
-      timer: 10,
+      timer: 30,
       isAuctionPaused: false,
       currentAuctionStartTime: Date.now(),
     };
@@ -727,7 +727,7 @@ function masterBid(teamId, incrementAmount) {
   }
   auctionState.currentBid = newBid;
   auctionState.currentBidderTeamId = biddingTeam.id;
-  auctionState.timer = auctionState.timer > 10 ? auctionState.timer : 10;
+  auctionState.timer = 30;
   auctionState.currentAuctionStartTime = Date.now();
   saveData();
   updateBidInfo();

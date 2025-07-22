@@ -2,11 +2,11 @@ import { User } from './models/User.js';
 import { Team } from './models/Team.js';
 import { Item } from './models/Item.js';
 import { AuctionState } from './models/AuctionState.js';
-import { AuctionService } from './services/AuctionService.js';
-import { TeamService } from './services/TeamService.js';
-import { UserService } from './services/UserService.js';
-import { MasterView } from './views/MasterView.js';
-import { StorageService } from './services/StorageService.js';
+import { AuctionService } from './js/services/AuctionService.js';
+import { TeamService } from './js/services/TeamService.js';
+import { UserService } from './js/services/UserService.js';
+import { MasterView } from './js/views/MasterView.js';
+import { StorageService } from './js/services/StorageService.js';
 
 class MasterController {
   constructor() {
