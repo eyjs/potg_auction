@@ -16,15 +16,15 @@ let items = JSON.parse(localStorage.getItem('items')) || [];
 
 let auctionState = JSON.parse(localStorage.getItem('auctionState')) || {
   currentAuctionItemIndex: -1,
-  timer: 30, // 이 값은 auctionState.auctionDuration으로 대체됨
-  intervalId: null, // setInterval ID
+  timer: 30,
+  intervalId: null,
   currentBid: 0,
   currentBidderTeamId: null,
-  isAuctionRunning: false, // 경매 전체가 시작되었는지 여부
-  isAuctionPaused: true, // 현재 매물 경매가 일시정지 상태인지 여부 (예: 다음 매물 대기 중)
-  currentAuctionStartTime: 0, // 경매가 시작된 시간 (리로드 시 타이머 동기화용)
-  auctionDuration: 30, // NEW: 기본 경매 시간 (초)
-  bidExtraTime: 10, // NEW: 입찰 시 추가 시간 (초)
+  isAuctionRunning: false,
+  isAuctionPaused: true,
+  currentAuctionStartTime: 0,
+  auctionDuration: 30,
+  bidExtraTime: 10,
 };
 
 // 현재 로그인한 사용자 정보 (sessionStorage에 저장)
@@ -34,47 +34,50 @@ let currentUser = JSON.parse(sessionStorage.getItem('currentUser')) || null;
 const loginPage = document.getElementById('loginPage');
 const masterPage = document.getElementById('masterPage');
 const auctionPage = document.getElementById('auctionPage');
-
 const loginUsernameInput = document.getElementById('loginUsername');
 const loginPasswordInput = document.getElementById('loginPassword');
 const loginBtn = document.getElementById('loginBtn');
 const loginMessage = document.getElementById('loginMessage');
-
 const masterUsernameDisplay = document.getElementById('masterUsernameDisplay');
 const auctionUsernameDisplay = document.getElementById('auctionUsernameDisplay');
 const logoutBtnMaster = document.getElementById('logoutBtnMaster');
 const logoutBtnAuction = document.getElementById('logoutBtnAuction');
-
-const scaffoldBtn = document.getElementById('scaffoldBtn');
-const scaffoldMessage = document.getElementById('scaffoldMessage');
-
 const goToAuctionPageBtn = document.getElementById('goToAuctionPageBtn');
 const goToMasterPageBtn = document.getElementById('goToMasterPageBtn');
-
 const regUsernameInput = document.getElementById('regUsername');
 const regPasswordInput = document.getElementById('regPassword');
+const regUserImage = document.getElementById('regUserImage');
 const registerUserBtn = document.getElementById('registerUserBtn');
 const regUserMessage = document.getElementById('regUserMessage');
-
+const scaffoldBtn = document.getElementById('scaffoldBtn');
+const scaffoldMessage = document.getElementById('scaffoldMessage');
+const jsonUserUploadInput = document.getElementById('jsonUserUploadInput');
+const uploadJsonUserBtn = document.getElementById('uploadJsonUserBtn');
+const downloadSampleUserJsonBtn = document.getElementById('downloadSampleUserJsonBtn');
+const bulkUserMessage = document.getElementById('bulkUserMessage');
 const teamNameInput = document.getElementById('teamNameInput');
 const createTeamBtn = document.getElementById('createTeamBtn');
 const createTeamMessage = document.getElementById('createTeamMessage');
 const createdTeamsList = document.getElementById('createdTeamsList');
-
 const availableUsersList = document.getElementById('availableUsersList');
 const dndTeamsList = document.getElementById('dndTeamsList');
 const dndAssignMessage = document.getElementById('dndAssignMessage');
 const currentTeamLeadersList = document.getElementById('currentTeamLeadersList');
-
 const itemNameInput = document.getElementById('itemNameInput');
 const itemDescInput = document.getElementById('itemDescInput');
 const itemImageInput = document.getElementById('itemImageInput');
 const addItemBtn = document.getElementById('addItemBtn');
 const addItemMessage = document.getElementById('addItemMessage');
 const registeredItemsList = document.getElementById('registeredItemsList');
-
+const jsonItemUploadInput = document.getElementById('jsonItemUploadInput');
+const uploadJsonItemBtn = document.getElementById('uploadJsonItemBtn');
+const downloadSampleItemJsonBtn = document.getElementById('downloadSampleItemJsonBtn');
+const bulkItemMessage = document.getElementById('bulkItemMessage');
 const auctionMasterMessage = document.getElementById('auctionMasterMessage');
-
+const auctionDurationInput = document.getElementById('auctionDurationInput');
+const bidExtraTimeInput = document.getElementById('bidExtraTimeInput');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const settingsMessage = document.getElementById('settingsMessage');
 const teamListContainer = document.getElementById('teamListContainer');
 const noItemMessage = document.getElementById('noItemMessage');
 const currentItemName = document.getElementById('currentItemName');
@@ -84,7 +87,10 @@ const currentBidInfo = document.getElementById('currentBidInfo');
 const currentBidValue = document.getElementById('currentBidValue');
 const currentBidTeam = document.getElementById('currentBidTeam');
 const timeCountDisplay = document.getElementById('timeCount');
-
+const participantGrid = document.getElementById('participantGrid');
+const auctionResultsSection = document.getElementById('auctionResultsSection');
+const downloadTeamResultsBtn = document.getElementById('downloadTeamResultsBtn');
+const downloadJsonDataBtn = document.getElementById('downloadJsonDataBtn');
 const auctionPageMasterControls = document.getElementById('auctionPageMasterControls');
 const auctionPageStartAuctionBtn = document.getElementById('auctionPageStartAuctionBtn');
 const auctionPageNextAuctionBtn = document.getElementById('auctionPageNextAuctionBtn');
@@ -92,29 +98,39 @@ const auctionPageStopAuctionBtn = document.getElementById('auctionPageStopAuctio
 const auctionPageEndAuctionBtn = document.getElementById('auctionPageEndAuctionBtn');
 const addTimeBtnAuctionPage = document.getElementById('addTimeBtnAuctionPage');
 const auctionPageMasterMessage = document.getElementById('auctionPageMasterMessage');
-
-const participantGrid = document.getElementById('participantGrid');
-
-// NEW: 유찰 매물 배정 (경매 페이지)
 const unbidItemAssignmentAuctionPage = document.getElementById('unbidItemAssignmentAuctionPage');
 const unbidItemsListAuctionPage = document.getElementById('unbidItemsListAuctionPage');
 const unbidItemsTeamsListAuctionPage = document.getElementById('unbidItemsTeamsListAuctionPage');
 const unbidItemAssignMessageAuctionPage = document.getElementById('unbidItemAssignMessageAuctionPage');
+const teamInfoModal = document.getElementById('teamInfoModal');
+const modalCloseBtn = document.querySelector('.modal-close-btn');
+const modalTeamName = document.getElementById('modalTeamName');
+const modalTeamMembers = document.getElementById('modalTeamMembers');
 
-const auctionResultsSection = document.getElementById('auctionResultsSection');
-const downloadTeamResultsBtn = document.getElementById('downloadTeamResultsBtn');
-const downloadJsonDataBtn = document.getElementById('downloadJsonDataBtn');
+// --- 이미지 URL 생성 헬퍼 ---
+function getUserImageUrl(user) {
+  // 사용자 객체에 이미지 경로가 있으면 사용, 없으면 랜덤 SVG 생성
+  return (
+    user?.image || `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(user?.username || 'default')}`
+  );
+}
 
-// NEW: 변수 설정
-const auctionDurationInput = document.getElementById('auctionDurationInput');
-const bidExtraTimeInput = document.getElementById('bidExtraTimeInput');
-const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-const settingsMessage = document.getElementById('settingsMessage');
+function getItemImageUrl(item) {
+  // 아이템 객체에 이미지 경로가 있으면 사용
+  if (item?.image) return item.image;
+  // 아이템이 참가자와 연결되어 있으면 해당 참가자의 이미지 사용
+  if (item?.participantId) {
+    const user = users.find((u) => u.id === item.participantId);
+    if (user) return getUserImageUrl(user);
+  }
+  // 모두 없으면 아이템 이름 기반으로 랜덤 SVG 생성
+  return `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(item?.name || 'default')}`;
+}
 
 // --- 초기 데이터 설정 ---
 function initializeData() {
   if (!users.some((u) => u.id === 'master' && u.role === USER_ROLE.MASTER)) {
-    users.push({ id: 'master', username: 'master', password: 'master', role: USER_ROLE.MASTER });
+    users.push({ id: 'master', username: 'master', password: 'master', role: USER_ROLE.MASTER, image: null });
     saveData();
   }
 }
@@ -207,7 +223,7 @@ function renderMasterPage() {
   if (!currentUser || currentUser.role !== USER_ROLE.MASTER) return;
   masterUsernameDisplay.textContent = currentUser.username;
   updateMasterPageLists();
-  loadSettings(); // NEW: 설정값 로드
+  loadSettings();
   scaffoldMessage.textContent = '';
   updateAuctionControls();
 }
@@ -219,9 +235,12 @@ function updateMasterPageLists() {
   updateRegisteredItemsList();
 }
 
+// --- 사용자 관리 ---
 registerUserBtn.addEventListener('click', () => {
   const username = regUsernameInput.value.trim();
   const password = regPasswordInput.value.trim();
+  const image = regUserImage.value.trim();
+
   if (!username || !password) {
     regUserMessage.textContent = '사용자 이름과 비밀번호를 입력하세요.';
     regUserMessage.classList.add('red');
@@ -232,16 +251,87 @@ registerUserBtn.addEventListener('click', () => {
     regUserMessage.classList.add('red');
     return;
   }
-  users.push({ id: `user_${Date.now()}`, username, password, role: USER_ROLE.GENERAL, teamId: null, points: 0 });
+  users.push({
+    id: `user_${Date.now()}`,
+    username,
+    password,
+    image: image || null,
+    role: USER_ROLE.GENERAL,
+    teamId: null,
+    points: 10000,
+  });
   saveData();
   regUserMessage.textContent = `사용자 '${username}'이(가) 등록되었습니다.`;
   regUserMessage.classList.remove('red');
   regUserMessage.classList.add('green');
   regUsernameInput.value = '';
   regPasswordInput.value = '';
+  regUserImage.value = '';
   updateMasterPageLists();
 });
 
+// --- 사용자 일괄 등록 ---
+function handleBulkUserUpload(file) {
+  if (!file) {
+    bulkUserMessage.textContent = '파일을 선택해주세요.';
+    bulkUserMessage.classList.add('red');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const newUsers = JSON.parse(e.target.result);
+      if (!Array.isArray(newUsers)) throw new Error('JSON 형식이 배열이 아닙니다.');
+
+      let addedCount = 0;
+      let skippedCount = 0;
+      newUsers.forEach((newUser) => {
+        if (newUser.username && newUser.password) {
+          if (users.some((u) => u.username === newUser.username)) {
+            skippedCount++;
+          } else {
+            users.push({
+              id: `user_${Date.now()}_${newUser.username}`,
+              username: newUser.username,
+              password: newUser.password,
+              image: newUser.image || null,
+              role: USER_ROLE.GENERAL,
+              teamId: null,
+              points: 10000,
+            });
+            addedCount++;
+          }
+        }
+      });
+      saveData();
+      updateMasterPageLists();
+      bulkUserMessage.textContent = `${addedCount}명의 사용자가 추가되었습니다. (중복 ${skippedCount}명 제외)`;
+      bulkUserMessage.className = 'message green';
+      jsonUserUploadInput.value = '';
+    } catch (error) {
+      bulkUserMessage.textContent = '오류: ' + error.message;
+      bulkUserMessage.className = 'message red';
+    }
+  };
+  reader.readAsText(file);
+}
+
+downloadSampleUserJsonBtn.addEventListener('click', () => {
+  const sampleData = [
+    { username: 'newUser1', password: 'password123', image: 'images/photo1.jpg' },
+    { username: 'newUser2', password: 'password456', image: '' },
+  ];
+  const jsonString = JSON.stringify(sampleData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_users.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// --- 팀 관리 ---
 createTeamBtn.addEventListener('click', () => {
   const teamName = teamNameInput.value.trim();
   if (!teamName) {
@@ -254,7 +344,7 @@ createTeamBtn.addEventListener('click', () => {
     createTeamMessage.classList.add('red');
     return;
   }
-  teams.push({ id: `team_${Date.now()}`, name: teamName, leaderId: null, points: 0, itemsWon: [] });
+  teams.push({ id: `team_${Date.now()}`, name: teamName, leaderId: null, points: 10000, itemsWon: [] });
   saveData();
   createTeamMessage.textContent = `팀 '${teamName}'이(가) 생성되었습니다.`;
   createTeamMessage.classList.remove('red');
@@ -287,15 +377,73 @@ function removeTeamLeader(teamId) {
   const leader = users.find((u) => u.id === team.leaderId);
   if (leader) {
     leader.role = USER_ROLE.GENERAL;
-    leader.teamId = null;
   }
   team.leaderId = null;
   saveData();
   updateMasterPageLists();
 }
 
+// --- 매물 관리 ---
+function handleBulkItemUpload(file) {
+  if (!file) {
+    bulkItemMessage.textContent = '파일을 선택해주세요.';
+    bulkItemMessage.classList.add('red');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const usernames = JSON.parse(e.target.result);
+      if (!Array.isArray(usernames)) throw new Error('JSON 형식이 사용자 이름 배열이 아닙니다.');
+      let addedCount = 0;
+      let skippedCount = 0;
+      usernames.forEach((username) => {
+        const user = users.find((u) => u.username === username && u.role === USER_ROLE.GENERAL);
+        if (user && !items.some((i) => i.participantId === user.id)) {
+          const newItem = {
+            id: `item_${user.id}`,
+            name: user.username,
+            description: `참가자 ${user.username}`,
+            image: getUserImageUrl(user),
+            status: 'pending',
+            participantId: user.id,
+          };
+          items.push(newItem);
+          addedCount++;
+        } else {
+          skippedCount++;
+        }
+      });
+      saveData();
+      updateMasterPageLists();
+      bulkItemMessage.textContent = `${addedCount}개의 매물이 추가되었습니다. (건너뜀: ${skippedCount}개)`;
+      bulkItemMessage.className = 'message green';
+      jsonItemUploadInput.value = '';
+    } catch (error) {
+      bulkItemMessage.textContent = '오류: ' + error.message;
+      bulkItemMessage.className = 'message red';
+    }
+  };
+  reader.readAsText(file);
+}
+
+downloadSampleItemJsonBtn.addEventListener('click', () => {
+  const sampleData = ['user_1', 'user_2', 'user_3'];
+  const jsonString = JSON.stringify(sampleData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sample_items.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
 addItemBtn.addEventListener('click', () => {
   const itemName = itemNameInput.value.trim();
+  const itemDesc = itemDescInput.value.trim();
+  const itemImage = itemImageInput.value.trim();
+
   if (!itemName) {
     addItemMessage.textContent = '매물 이름을 입력하세요.';
     addItemMessage.classList.add('red');
@@ -309,12 +457,11 @@ addItemBtn.addEventListener('click', () => {
   const newItem = {
     id: `item_${Date.now()}`,
     name: itemName,
-    description: itemDescInput.value.trim(),
-    image:
-      itemImageInput.value.trim() || `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(itemName)}`,
+    description: itemDesc,
+    image: itemImage || null,
     bidPrice: 0,
     bidderTeamId: null,
-    status: 'pending', // 변경됨
+    status: 'pending',
     participantId: null,
   };
   items.push(newItem);
@@ -381,7 +528,6 @@ function deleteItem(itemId) {
   addItemMessage.classList.add('green');
 }
 
-// --- 팀장 배정 D&D ---
 function populateAvailableUsersList() {
   availableUsersList.innerHTML = '';
   users
@@ -424,22 +570,18 @@ function assignTeamLeaderDnd(userId, teamId) {
   const team = teams.find((t) => t.id === teamId);
   if (!user || !team) return;
 
-  // 기존 팀장 역할 해제
   const oldTeam = teams.find((t) => t.leaderId === user.id);
   if (oldTeam) oldTeam.leaderId = null;
 
   const oldLeader = users.find((u) => u.id === team.leaderId);
   if (oldLeader) {
     oldLeader.role = USER_ROLE.GENERAL;
-    oldLeader.teamId = null;
   }
 
-  // 팀장 지정 및 역할 변경
   team.leaderId = user.id;
   user.role = USER_ROLE.TEAM_LEADER;
-  user.teamId = team.id; // 팀장도 해당 팀에 소속
+  user.teamId = team.id;
 
-  // 기존 매물에서 팀장 관련 매물 제거
   items = items.filter((item) => item.participantId !== user.id);
 
   saveData();
@@ -448,7 +590,6 @@ function assignTeamLeaderDnd(userId, teamId) {
   updateMasterPageLists();
 }
 
-// --- 유찰 매물 배정 D&D ---
 function populateUnbidItemsList(listElement) {
   listElement.innerHTML = '';
   users
@@ -458,8 +599,8 @@ function populateUnbidItemsList(listElement) {
       li.className = 'draggable-item';
       li.draggable = true;
       li.dataset.userId = user.id;
-      li.innerHTML = `<img src="https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(
-        user.username
+      li.innerHTML = `<img src="${getUserImageUrl(
+        user
       )}" style="width:24px; height:24px; border-radius:50%; margin-right:8px;"> ${user.username}`;
       li.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', e.target.dataset.userId));
       listElement.appendChild(li);
@@ -496,10 +637,8 @@ function assignUnbidUserToTeam(userId, teamId, messageElement) {
   const team = teams.find((t) => t.id === teamId);
   if (!user || !team) return;
 
-  // 이미 배정된 사용자인지 다시 한번 확인
   if (user.teamId !== null) {
-    console.warn(`${user.username} is already assigned to a team.`);
-    renderAuctionPage(); // UI를 동기화하여 목록에서 제거
+    renderAuctionPage();
     return;
   }
 
@@ -510,7 +649,13 @@ function assignUnbidUserToTeam(userId, teamId, messageElement) {
   }
   let item = items.find((i) => i.participantId === user.id);
   if (!item) {
-    item = { id: `item_manual_${user.id}`, name: user.username, participantId: user.id, status: 'sold' };
+    item = {
+      id: `item_manual_${user.id}`,
+      name: user.username,
+      participantId: user.id,
+      status: 'sold',
+      image: getUserImageUrl(user),
+    };
     items.push(item);
   }
   item.status = 'sold';
@@ -522,12 +667,9 @@ function assignUnbidUserToTeam(userId, teamId, messageElement) {
   messageElement.classList.add('green');
 
   saveData();
-
-  // BUG FIX: UI가 즉시 업데이트되지 않는 문제를 해결하기 위해 수동으로 화면을 새로고침합니다.
   renderAuctionPage();
 }
 
-// --- 변수 설정 기능 ---
 function loadSettings() {
   auctionDurationInput.value = auctionState.auctionDuration || 30;
   bidExtraTimeInput.value = auctionState.bidExtraTime || 10;
@@ -555,7 +697,6 @@ function saveSettings() {
   }, 3000);
 }
 
-// --- 스캐폴드 ---
 scaffoldBtn.addEventListener('click', () => {
   if (!confirm('기존 데이터를 모두 초기화하고 테스트 데이터를 생성하시겠습니까?')) return;
 
@@ -563,7 +704,7 @@ scaffoldBtn.addEventListener('click', () => {
   teams = [];
   items = [];
   auctionState = {
-    ...auctionState, // 보존할 설정값 (duration, extraTime)
+    ...auctionState,
     currentAuctionItemIndex: -1,
     timer: auctionState.auctionDuration,
     intervalId: null,
@@ -578,6 +719,7 @@ scaffoldBtn.addEventListener('click', () => {
       id: `user_${Date.now()}_${i}`,
       username: `user_${i}`,
       password: 'pw',
+      image: null,
       role: USER_ROLE.GENERAL,
       teamId: null,
       points: 10000,
@@ -596,6 +738,7 @@ scaffoldBtn.addEventListener('click', () => {
     if (leader) {
       team.leaderId = leader.id;
       leader.role = USER_ROLE.TEAM_LEADER;
+      leader.teamId = team.id;
     }
   });
 
@@ -604,8 +747,8 @@ scaffoldBtn.addEventListener('click', () => {
       id: `item_${user.id}`,
       name: user.username,
       description: `참가자 ${user.username}`,
-      image: `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(user.username)}`,
-      status: 'pending', // 변경됨
+      image: getUserImageUrl(user),
+      status: 'pending',
       participantId: user.id,
     });
   });
@@ -636,7 +779,9 @@ function handleStartAuction(messageElement) {
       t.points = 10000;
     });
     users.forEach((u) => {
-      if (u.role !== USER_ROLE.MASTER) u.teamId = null;
+      if (u.role !== USER_ROLE.MASTER && u.role !== USER_ROLE.TEAM_LEADER) {
+        u.teamId = null;
+      }
     });
   }
   auctionState = { ...auctionState, isAuctionRunning: true, isAuctionPaused: true, currentAuctionItemIndex: -1 };
@@ -661,7 +806,6 @@ function handleEndAuction(messageElement) {
 function handleStopAuction(messageElement) {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
 
-  // 경매 상태 및 데이터 초기화
   auctionState = {
     ...auctionState,
     currentAuctionItemIndex: -1,
@@ -738,10 +882,11 @@ function updateAuctionControls() {
   const canNext = auctionState.isAuctionRunning && auctionState.isAuctionPaused && !isEnded;
   const canAddTime = auctionState.isAuctionRunning && !auctionState.isAuctionPaused;
 
-  [auctionPageStartAuctionBtn].forEach((btn) => (btn.disabled = !canStart));
-  [auctionPageStopAuctionBtn, auctionPageEndAuctionBtn].forEach((btn) => (btn.disabled = !canStop));
-  [auctionPageNextAuctionBtn].forEach((btn) => (btn.disabled = !canNext));
-  [addTimeBtnAuctionPage].forEach((btn) => (btn.disabled = !canAddTime));
+  if (auctionPageStartAuctionBtn) auctionPageStartAuctionBtn.disabled = !canStart;
+  if (auctionPageStopAuctionBtn) auctionPageStopAuctionBtn.disabled = !canStop;
+  if (auctionPageEndAuctionBtn) auctionPageEndAuctionBtn.disabled = !canStop;
+  if (auctionPageNextAuctionBtn) auctionPageNextAuctionBtn.disabled = !canNext;
+  if (addTimeBtnAuctionPage) addTimeBtnAuctionPage.disabled = !canAddTime;
 }
 
 function startNextAuction() {
@@ -768,7 +913,7 @@ function startNextAuction() {
       currentAuctionItemIndex: nextItemIndex,
       currentBid: 0,
       currentBidderTeamId: null,
-      timer: auctionState.auctionDuration, // Use configured duration
+      timer: auctionState.auctionDuration,
       isAuctionPaused: false,
       currentAuctionStartTime: Date.now(),
     };
@@ -789,27 +934,20 @@ function handleAuctionEndRound() {
     return;
   }
 
-  // 입찰이 성공적으로 이루어졌는지 확인
   if (auctionState.currentBid > 0 && auctionState.currentBidderTeamId) {
     const winningTeam = teams.find((t) => t.id === auctionState.currentBidderTeamId);
-
-    // 팀 슬롯이 가득 차지 않았는지 최종 확인
     if (winningTeam && winningTeam.itemsWon.length < maxTeamItems) {
-      // --- NEW: 낙찰 팝업 표시 로직 ---
       const price = auctionState.currentBid;
       const itemName = currentItem.participantId
         ? users.find((u) => u.id === currentItem.participantId)?.username || currentItem.name
         : currentItem.name;
 
-      // 기존 레이아웃 팝업을 호출하여 낙찰 정보를 표시
       showCustomAlert(
         `<b>${itemName}</b> 님이<br>
          <b>${winningTeam.name}</b> 팀에<br>
          <span style="font-size: 1.2em; color: var(--warning-color);">${price.toLocaleString()}P</span> 에 낙찰되었습니다!`
       );
-      // --- 로직 추가 끝 ---
 
-      // 기존 데이터 처리 로직
       winningTeam.points -= price;
       winningTeam.itemsWon.push(currentItem.id);
       currentItem.status = 'sold';
@@ -820,11 +958,9 @@ function handleAuctionEndRound() {
         if (user) user.teamId = winningTeam.id;
       }
     } else {
-      // 낙찰되었으나 팀이 꽉 찬 경우 등 예외상황 -> 유찰 처리
       currentItem.status = 'unsold';
     }
   } else {
-    // 입찰자가 없는 경우 -> 유찰 처리
     currentItem.status = 'unsold';
   }
 
@@ -868,35 +1004,26 @@ function startTimer() {
 }
 
 function showCustomAlert(message) {
-  // 이미 있으면 제거
   const oldModal = document.getElementById('customAlertModal');
   if (oldModal) oldModal.remove();
 
   const modal = document.createElement('div');
   modal.id = 'customAlertModal';
+  modal.classList.add('modal-overlay');
   modal.innerHTML = `
-    <div style="
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.7); z-index: 9999; display: flex; align-items: center; justify-content: center;
-    ">
-      <div style="
-        background: linear-gradient(135deg, #00adb5 0%, #222831 100%);
-        color: #fff; border-radius: 18px; box-shadow: 0 8px 32px #0008;
-        padding: 48px 36px; text-align: center; max-width: 420px; font-size: 1.35em; font-family: 'Bebas Neue', 'Segoe UI', Arial, sans-serif;
-        position: relative;
-      ">
-        <div style="font-size:2.2em; margin-bottom:18px;">🎉 낙찰! 🎉</div>
-        <div style="margin-bottom:24px;">${message}</div>
-        <button id="customAlertCloseBtn" style="
-          background: #00adb5; color: #fff; border: none; border-radius: 8px;
-          padding: 12px 32px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px #00adb533;
-        ">확인</button>
+      <div class="modal-content" style="max-width: 420px; text-align: center;">
+        <div style="font-size:2.2em; margin-bottom:18px; color: var(--accent-color);">🎉 낙찰! 🎉</div>
+        <div style="margin-bottom:24px; font-size: 1.2em; line-height: 1.6;">${message}</div>
+        <button id="customAlertCloseBtn" class="primary-btn">확인</button>
       </div>
-    </div>
   `;
   document.body.appendChild(modal);
-  document.getElementById('customAlertCloseBtn').onclick = () => modal.remove();
+  modal.querySelector('#customAlertCloseBtn').onclick = () => modal.remove();
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
 }
+
 function masterBid(teamId, incrementAmount) {
   if (!currentUser || currentUser.role !== USER_ROLE.MASTER) return;
   const currentItem = items[auctionState.currentAuctionItemIndex];
@@ -924,8 +1051,6 @@ function masterBid(teamId, incrementAmount) {
   const allOpponentsCantBid = potentialOpponents.every((team) => team.points <= newBid);
 
   if (allOpponentsCantBid) {
-    // --- UPDATED: 기존 팝업 호출 제거 ---
-    // 팝업 로직이 handleAuctionEndRound로 일원화되었으므로 여기서는 제거합니다.
     auctionState.timer = 0;
     if (auctionState.intervalId) clearInterval(auctionState.intervalId);
     handleAuctionEndRound();
@@ -951,14 +1076,12 @@ function renderAuctionPage() {
   const auctionIsOver = isAuctionEndable();
   const hasUnbidUsers = users.some((u) => u.role === USER_ROLE.GENERAL && u.teamId === null);
 
-  // 경매 종료 후 결과 섹션 표시
   if (auctionIsOver && !auctionState.isAuctionRunning) {
     auctionResultsSection.style.display = 'block';
   } else {
     auctionResultsSection.style.display = 'none';
   }
 
-  // 경매 종료 후 유찰자 배정 섹션 표시 (마스터에게만)
   if (auctionIsOver && hasUnbidUsers && currentUser && currentUser.role === USER_ROLE.MASTER) {
     unbidItemAssignmentAuctionPage.style.display = 'flex';
     populateUnbidItemsList(unbidItemsListAuctionPage);
@@ -971,11 +1094,11 @@ function renderAuctionPage() {
 function updateAuctionDisplay(item) {
   const isMaster = currentUser && currentUser.role === USER_ROLE.MASTER;
   auctionPageMasterControls.style.display = isMaster ? 'flex' : 'none';
-  document.getElementById('bidButton').style.display = 'none'; // 일반 입찰 버튼은 항상 숨김
+  document.getElementById('bidButton').style.display = 'none';
 
   if (item && auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
     noItemMessage.style.display = 'none';
-    currentItemImage.src = item.image;
+    currentItemImage.src = getItemImageUrl(item);
     currentItemImage.style.display = 'block';
     const displayName = item.participantId
       ? users.find((u) => u.id === item.participantId)?.username || '참여자'
@@ -1002,12 +1125,57 @@ function updateBidInfo() {
   timeCountDisplay.textContent = `남은 시간: ${String(auctionState.timer).padStart(2, '0')}초`;
 }
 
+function showTeamInfoModal(teamId) {
+  const team = teams.find((t) => t.id === teamId);
+  if (!team) return;
+
+  modalTeamName.textContent = `${team.name} 팀원 정보`;
+  const members = users
+    .filter((u) => u.teamId === teamId)
+    .sort((a, b) => (b.role === USER_ROLE.TEAM_LEADER) - (a.role === USER_ROLE.TEAM_LEADER));
+
+  let tableHTML = `<table class="modal-table">
+                        <thead>
+                            <tr>
+                                <th>이미지</th>
+                                <th>아이디</th>
+                                <th>역할</th>
+                                <th>낙찰가</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+  if (members.length === 0) {
+    tableHTML += `<tr><td colspan="4" style="text-align: center;">배정된 팀원이 없습니다.</td></tr>`;
+  } else {
+    members.forEach((member) => {
+      const item = items.find((i) => i.participantId === member.id);
+      const price = item ? item.bidPrice || 0 : 0;
+      const roleText = member.role === USER_ROLE.TEAM_LEADER ? '팀장' : '팀원';
+      const userImage = getUserImageUrl(member);
+      const tooltipText = `이미지 URL: ${userImage}\n아이디: ${member.username}\n낙찰가격: ${price.toLocaleString()}P`;
+
+      tableHTML += `<tr title="${tooltipText}">
+                            <td><img src="${userImage}" alt="${member.username}"></td>
+                            <td>${member.username}</td>
+                            <td>${roleText}</td>
+                            <td>${price.toLocaleString()} P</td>
+                         </tr>`;
+    });
+  }
+
+  tableHTML += `</tbody></table>`;
+  modalTeamMembers.innerHTML = tableHTML;
+  teamInfoModal.style.display = 'flex';
+}
+
 function renderTeamList() {
   teamListContainer.innerHTML = '';
   teams.forEach((team) => {
     const teamLeader = users.find((u) => u.id === team.leaderId);
     const teamItem = document.createElement('div');
     teamItem.classList.add('team-item');
+    teamItem.dataset.teamId = team.id;
     const teamAvatarSrc = `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(team.name)}`;
 
     let masterBidButtonsHTML = '';
@@ -1038,91 +1206,77 @@ function renderTeamList() {
         .join('')}</div>
       ${masterBidButtonsHTML}
     `;
+
+    teamItem.addEventListener('click', (e) => {
+      if (e.target.closest('.master-bid-btn')) return;
+      showTeamInfoModal(team.id);
+    });
+
     teamListContainer.appendChild(teamItem);
   });
 }
 
 function renderParticipantGrid() {
   participantGrid.innerHTML = '';
-  // 팀장(TEAM_LEADER)은 제외하고, 팀에 속하지 않은 일반 참여자만 표시
-  const participants = users.filter((u) => u.role === USER_ROLE.GENERAL && u.teamId === null);
+  const participants = users.filter((u) => u.role === USER_ROLE.GENERAL && items.some((i) => i.participantId === u.id));
+
   participants.forEach((user) => {
+    const container = document.createElement('div');
+    container.className = 'participant-container';
+
+    const { password, ...userInfoForTooltip } = user;
+    const tooltipText = Object.entries(userInfoForTooltip)
+      .map(([key, value]) => `${key}: ${value === null ? 'N/A' : value}`)
+      .join('\n');
+    container.title = tooltipText;
+
     const avatar = document.createElement('div');
     avatar.className = 'participant-avatar';
-    const currentItem = items[auctionState.currentAuctionItemIndex];
-    if (currentItem && currentItem.participantId === user.id) {
-      avatar.classList.add('border-auction-item');
-    } else {
-      avatar.classList.add('border-general');
+
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'participant-name';
+    nameLabel.textContent = user.username;
+
+    const item = items.find((i) => i.participantId === user.id);
+    let statusLabel = null;
+
+    if (item) {
+      if (item.status === 'sold' || item.status === 'unsold') {
+        avatar.classList.add(item.status);
+        statusLabel = document.createElement('div');
+        statusLabel.className = `participant-status-overlay ${item.status}`;
+        statusLabel.textContent = item.status === 'sold' ? '낙찰' : '유찰';
+      }
     }
-    avatar.title = user.username;
-    avatar.style.backgroundImage = `url(https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(
-      user.username
-    )})`;
-    participantGrid.appendChild(avatar);
+
+    const currentItemOnAuction = items[auctionState.currentAuctionItemIndex];
+    if (currentItemOnAuction && currentItemOnAuction.participantId === user.id) {
+      avatar.classList.add('border-auction-item');
+    }
+
+    avatar.style.backgroundImage = `url(${getUserImageUrl(user)})`;
+
+    container.appendChild(avatar);
+    container.appendChild(nameLabel);
+    if (statusLabel) container.appendChild(statusLabel);
+
+    participantGrid.appendChild(container);
   });
 }
 
 downloadTeamResultsBtn.addEventListener('click', () => {
   let report = `
-  <div style="
-    background: var(--secondary-bg, #393e46);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-    width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto;
-    padding: 48px 36px 36px 36px;
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-    color: var(--text-color, #eeeeee);
-    position: relative;
-    overflow: hidden;
-    border: 4px solid var(--accent-color, #00adb5);
-    box-sizing: border-box;
-  ">
-    <div style="
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 36px;
-    ">
-      <h2 style="
-        color: var(--accent-color, #00adb5);
-        font-size: 2.2em;
-        margin: 0;
-        letter-spacing: 1px;
-        font-family: 'Bebas Neue', 'Segoe UI', 'Roboto', Arial, sans-serif;
-      ">경매 최종 결과</h2>
-      <button id="printReportBtn" style="
-        background: var(--accent-color, #00adb5);
-        color: var(--secondary-bg, #393e46);
-        border: none;
-        border-radius: 8px;
-        padding: 10px 26px;
-        font-size: 1.08em;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 2px 8px #00adb533;
-        transition: background 0.3s;
-        font-family: 'Bebas Neue', 'Segoe UI', 'Roboto', Arial, sans-serif;
-      ">인쇄</button>
+  <div style="background-color: #393e46; border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); width: 210mm; min-height: 297mm; margin: 0 auto; padding: 48px; font-family: 'Segoe UI', sans-serif; color: #eeeeee; border: 4px solid #00adb5; box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 36px;">
+      <h2 style="color: #00adb5; font-size: 2.2em; margin: 0;">경매 최종 결과</h2>
+      <button id="printReportBtn" style="background: #00adb5; color: #222831; border: none; border-radius: 8px; padding: 10px 26px; font-size: 1.08em; font-weight: bold; cursor: pointer;">인쇄</button>
     </div>
-    <table style="
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      background: var(--primary-bg, #222831);
-      border-radius: 12px;
-      overflow: hidden;
-      font-size: 1.04em;
-      box-shadow: 0 2px 8px #0001;
-      color: var(--text-color, #eeeeee);
-    ">
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0; background: #222831; border-radius: 12px; overflow: hidden;">
       <thead>
-        <tr style="background: var(--accent-color, #00adb5);">
-          <th style="padding:18px 10px; border-bottom:2px solid var(--border-color, #4a4f57); color:#fff; font-size:1.08em;">팀명</th>
-          <th style="padding:18px 10px; border-bottom:2px solid var(--border-color, #4a4f57); color:#fff; font-size:1.08em;">남은 포인트</th>
-          <th style="padding:18px 10px; border-bottom:2px solid var(--border-color, #4a4f57); color:#fff; font-size:1.08em;">팀원 (포인트 사용 내역)</th>
+        <tr style="background: #00adb5;">
+          <th style="padding:18px; color:#fff;">팀명</th>
+          <th style="padding:18px; color:#fff;">남은 포인트</th>
+          <th style="padding:18px; color:#fff;">팀원 (포인트 사용 내역)</th>
         </tr>
       </thead>
       <tbody>
@@ -1131,18 +1285,16 @@ downloadTeamResultsBtn.addEventListener('click', () => {
     const leader = users.find((u) => u.id === team.leaderId);
     const members = users.filter((u) => u.teamId === team.id);
     report += `
-      <tr style="background: var(--primary-bg, #222831);">
-        <td style="padding:16px 10px; border-bottom:1px solid var(--border-color, #4a4f57);">
-          <strong style="font-size:1.12em; color:var(--accent-color, #00adb5);">${team.name}</strong><br>
-          <span style="color:var(--light-grey-text, #cccccc); font-size:0.97em;">(리더: ${
-            leader ? leader.username : '없음'
-          })</span>
+      <tr>
+        <td style="padding:16px; border-bottom:1px solid #4a4f57;">
+          <strong style="font-size:1.12em; color:#00adb5;">${team.name}</strong><br>
+          <span style="font-size:0.97em;">(리더: ${leader ? leader.username : '없음'})</span>
         </td>
-        <td style="padding:16px 10px; border-bottom:1px solid var(--border-color, #4a4f57); color:var(--success-color, #28a745); font-weight:bold; font-size:1.09em;">
+        <td style="padding:16px; border-bottom:1px solid #4a4f57; color:#28a745; font-weight:bold;">
           ${team.points.toLocaleString()}P
         </td>
-        <td style="padding:16px 10px; border-bottom:1px solid var(--border-color, #4a4f57);">
-          <ul style="margin:0; padding-left:20px; list-style:disc;">
+        <td style="padding:16px; border-bottom:1px solid #4a4f57;">
+          <ul style="margin:0; padding-left:20px;">
             ${members
               .map((member) => {
                 const wonItem = items.find(
@@ -1151,11 +1303,11 @@ downloadTeamResultsBtn.addEventListener('click', () => {
                 const price = wonItem && typeof wonItem.bidPrice === 'number' ? wonItem.bidPrice : 0;
                 const roleText =
                   member.role === USER_ROLE.TEAM_LEADER
-                    ? ' <span style="color:var(--accent-color, #00adb5); font-weight:bold;">(팀장)</span>'
+                    ? ' <span style="color:#00adb5; font-weight:bold;">(팀장)</span>'
                     : '';
-                return `<li style="margin-bottom:5px; font-size:1em; color:var(--text-color, #eeeeee);">
-                  <span style="font-weight:500;">${member.username}${roleText}</span>
-                  <span style="color:var(--danger-color, #dc3545); font-weight:bold;"> - ${price.toLocaleString()}P</span>
+                return `<li style="margin-bottom:5px;">
+                  <span>${member.username}${roleText}</span>
+                  <span style="color:#dc3545; font-weight:bold;"> - ${price.toLocaleString()}P</span>
                 </li>`;
               })
               .join('')}
@@ -1167,25 +1319,9 @@ downloadTeamResultsBtn.addEventListener('click', () => {
   report += `
       </tbody>
     </table>
-    <div style="margin-top:32px; text-align:right; color:var(--light-grey-text, #cccccc); font-size:0.98em;">
-      Powered by POTG Auction
-    </div>
   </div>
-  <link href="https://fonts.googleapis.com/css?family=Bebas+Neue:400,700&display=swap" rel="stylesheet">
   <script>
-    document.getElementById('printReportBtn').onclick = function() {
-      window.print();
-    };
-    window.onbeforeprint = function() {
-      document.body.style.background = "#fff";
-      document.body.style.color = "#222";
-      var btn = document.getElementById('printReportBtn');
-      if(btn) btn.style.display = "none";
-    };
-    window.onafterprint = function() {
-      var btn = document.getElementById('printReportBtn');
-      if(btn) btn.style.display = "";
-    };
+    document.getElementById('printReportBtn').onclick = () => window.print();
   </script>
   `;
 
@@ -1211,6 +1347,17 @@ document.addEventListener('DOMContentLoaded', () => {
   showPage(currentUser ? (currentUser.role === USER_ROLE.MASTER ? 'masterPage' : 'auctionPage') : 'loginPage');
 
   if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSettings);
+  if (uploadJsonUserBtn)
+    uploadJsonUserBtn.addEventListener('click', () => handleBulkUserUpload(jsonUserUploadInput.files[0]));
+  if (uploadJsonItemBtn)
+    uploadJsonItemBtn.addEventListener('click', () => handleBulkItemUpload(jsonItemUploadInput.files[0]));
+
+  // 모달 닫기 이벤트
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => (teamInfoModal.style.display = 'none'));
+  if (teamInfoModal)
+    teamInfoModal.addEventListener('click', (e) => {
+      if (e.target === teamInfoModal) teamInfoModal.style.display = 'none';
+    });
 
   window.addEventListener('storage', (event) => {
     if (['users', 'teams', 'items', 'auctionState'].includes(event.key)) {

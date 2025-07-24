@@ -518,10 +518,12 @@ body {
   padding: 15px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 .team-item:hover {
   transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 173, 181, 0.2);
 }
 
 .team-avatar {
@@ -750,41 +752,91 @@ body {
 
 .participant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); /* Larger avatars */
-  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 20px;
   justify-content: center;
   flex-grow: 1;
   overflow-y: auto;
-  padding: 5px; /* Add some padding for scrolling */
+  padding: 5px;
+}
+
+/* NEW: Container for each participant */
+.participant-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
 .participant-avatar {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background-color: #555; /* Default background if no image */
+  background-color: #555;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.8em;
   color: white;
   font-weight: bold;
-  border: 4px solid transparent; /* Default transparent border */
+  border: 4px solid transparent;
   transition: border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   flex-shrink: 0;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  overflow: hidden; /* For DiceBear avatars */
+  overflow: hidden;
   background-size: cover;
   background-position: center;
-  text-indent: -9999px;
 }
 .participant-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-} /* For DiceBear images */
-.participant-avatar:hover {
+}
+.participant-container:hover .participant-avatar {
   transform: scale(1.05);
+}
+
+/* NEW: Participant name style */
+.participant-name {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: var(--light-grey-text);
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* NEW: Participant status overlay label */
+.participant-status-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+  pointer-events: none; /* Allows hover on avatar behind it */
+}
+
+/* Dimming effect for sold/unsold avatars */
+.participant-avatar.sold,
+.participant-avatar.unsold {
+  opacity: 0.5;
+  filter: grayscale(50%);
+}
+
+.participant-status-overlay.sold {
+  background-color: rgba(40, 167, 69, 0.8); /* Green */
+}
+.participant-status-overlay.unsold {
+  background-color: rgba(108, 117, 125, 0.8); /* Grey */
 }
 
 /* Specific border colors for participant roles/status */
@@ -878,6 +930,88 @@ body {
 .download-btn.purple:hover {
   background-color: #8e44ad;
   transform: translateY(-2px);
+}
+
+/* --- Team Info Modal Styles --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--secondary-bg);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+  width: 90%;
+  max-width: 700px;
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 2em;
+  font-weight: bold;
+  color: var(--light-grey-text);
+  cursor: pointer;
+}
+.modal-close-btn:hover {
+  color: var(--accent-color);
+}
+
+.modal-content h2 {
+  color: var(--accent-color);
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.modal-table-container {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-color);
+}
+
+.modal-table th,
+.modal-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-table thead th {
+  background-color: var(--primary-bg);
+  color: var(--accent-color);
+  position: sticky;
+  top: 0;
+}
+
+.modal-table tbody tr:hover {
+  background-color: #4f555e;
+}
+
+.modal-table img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
 }
 
 /* --- Responsive Adjustments --- */
@@ -997,46 +1131,8 @@ body {
   .participant-avatar {
     width: 60px;
     height: 60px;
-    font-size: 1.5em;
   }
   .team-item {
     padding: 12px;
   }
-}
-
-/* 참여자 아바타 컨테이너 스타일 (오버레이를 위함) */
-.participant-avatar-container {
-  position: relative;
-}
-
-/* 유찰/낙찰 오버레이 공통 스타일 */
-.participant-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.1em;
-  font-weight: bold;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-}
-
-/* 낙찰 오버레이 스타일 */
-.overlay-sold {
-  background-color: rgba(0, 173, 181, 0.7); /* Teal Blue with transparency */
-}
-
-/* 유찰 오버레이 스타일 */
-.overlay-unbid {
-  background-color: rgba(108, 117, 125, 0.7); /* Grey with transparency */
-}
-
-.participant-avatar.sold,
-.participant-avatar.unbid {
-  opacity: 0.5; /* 상태가 결정된 아바타는 약간 흐리게 처리 */
 }
