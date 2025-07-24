@@ -294,51 +294,83 @@ registerUserBtn.addEventListener('click', () => {
 });
 
 // --- 사용자 일괄 등록 ---
+function makeItemFromUser(user) {
+  return {
+    id: `item_${user.id}`,
+    name: user.username,
+    description: `참가자 ${user.username}`,
+    image: getUserImageUrl(user), // 기존 아바타 재사용(함수는 원래 있던 것)
+    status: 'pending', // 경매 대기
+    participantId: user.id,
+    bidPrice: 0,
+    bidderTeamId: null,
+  };
+}
+
+/* === 수정된 handleBulkUserUpload ================= */
 function handleBulkUserUpload(file) {
   if (!file) {
     bulkUserMessage.textContent = '파일을 선택해주세요.';
     bulkUserMessage.classList.add('red');
     return;
   }
+
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const newUsers = JSON.parse(e.target.result);
-      if (!Array.isArray(newUsers)) throw new Error('JSON 형식이 배열이 아닙니다.');
+      const uploadedUsers = JSON.parse(e.target.result);
+      if (!Array.isArray(uploadedUsers)) throw new Error('JSON 형식이 배열이 아닙니다.');
 
-      let addedCount = 0;
-      let skippedCount = 0;
-      newUsers.forEach((newUser) => {
-        if (newUser.username && newUser.password) {
-          if (users.some((u) => u.username === newUser.username)) {
-            skippedCount++;
-          } else {
-            users.push({
-              id: `user_${Date.now()}_${newUser.username}`,
-              username: newUser.username,
-              password: newUser.password,
-              image: newUser.image || null,
-              role: USER_ROLE.GENERAL,
-              teamId: null,
-              points: 10000,
-            });
-            addedCount++;
-          }
+      let addedUserCount = 0; // 새로 추가된 사용자 수
+      let skippedUserCount = 0; // 중복 사용자 수
+      let addedItemCount = 0; // 새로 생성된 매물 수
+
+      uploadedUsers.forEach((u) => {
+        if (!(u.username && u.password)) return; // 필수값 없으면 건너뜀
+
+        /* 1) 사용자 중복 확인 */
+        let userObj = users.find((ex) => ex.username === u.username);
+
+        if (userObj) {
+          skippedUserCount++; // 이미 존재
+        } else {
+          /* 2) 새 사용자 등록 */
+          userObj = {
+            id: `user_${Date.now()}_${u.username}`,
+            username: u.username,
+            password: u.password,
+            image: u.image || null,
+            role: USER_ROLE.GENERAL,
+            teamId: null,
+            points: 10000,
+          };
+          users.push(userObj);
+          addedUserCount++;
+        }
+
+        /* 3) 매물 자동 생성 (중복 방지) */
+        if (!items.some((it) => it.participantId === userObj.id)) {
+          items.push(makeItemFromUser(userObj));
+          addedItemCount++;
         }
       });
+
+      /* 4) 저장 & UI 갱신 */
       saveData();
       updateMasterPageLists();
-      bulkUserMessage.textContent = `${addedCount}명의 사용자가 추가되었습니다. (중복 ${skippedCount}명 제외)`;
+
+      bulkUserMessage.textContent =
+        `${addedUserCount}명 추가, ${skippedUserCount}명 중복, ` + `매물 ${addedItemCount}건 생성 완료`;
       bulkUserMessage.className = 'message green';
-      jsonUserUploadInput.value = '';
+      jsonUserUploadInput.value = ''; // 파일 입력 초기화
     } catch (error) {
       bulkUserMessage.textContent = '오류: ' + error.message;
       bulkUserMessage.className = 'message red';
     }
   };
+
   reader.readAsText(file);
 }
-
 downloadSampleUserJsonBtn.addEventListener('click', () => {
   const sampleData = [
     { username: 'newUser1', password: 'password123', image: 'images/photo1.jpg' },
