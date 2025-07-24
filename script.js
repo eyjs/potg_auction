@@ -1288,7 +1288,7 @@ downloadTeamResultsBtn.addEventListener('click', () => {
       <tr>
         <td style="padding:16px; border-bottom:1px solid #4a4f57;">
           <strong style="font-size:1.12em; color:#00adb5;">${team.name}</strong><br>
-          <span style="font-size:0.97em;">(리더: ${leader ? leader.username : '없음'})</span>
+          <span style="font-size:0.97em; color:#fff;">(리더: ${leader ? leader.username : '없음'})</span>
         </td>
         <td style="padding:16px; border-bottom:1px solid #4a4f57; color:#28a745; font-weight:bold;">
           ${team.points.toLocaleString()}P
@@ -1305,8 +1305,8 @@ downloadTeamResultsBtn.addEventListener('click', () => {
                   member.role === USER_ROLE.TEAM_LEADER
                     ? ' <span style="color:#00adb5; font-weight:bold;">(팀장)</span>'
                     : '';
-                return `<li style="margin-bottom:5px;">
-                  <span>${member.username}${roleText}</span>
+                return `<li style="margin-bottom:5px; color:#28a745">
+                  <span style="color:#fff;">${member.username}${roleText}</span>
                   <span style="color:#dc3545; font-weight:bold;"> - ${price.toLocaleString()}P</span>
                 </li>`;
               })
