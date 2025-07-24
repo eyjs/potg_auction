@@ -200,6 +200,19 @@ loginBtn.addEventListener('click', () => {
   }
 });
 
+function resetAllData() {
+  if (!confirm('⚠ 모든 경매 데이터를 초기화합니다.\n되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+
+  // 타이머가 돌고 있으면 중단
+  if (auctionState.intervalId) clearInterval(auctionState.intervalId);
+
+  // 핵심 키만 제거(다른 로컬스토리지 값 보호)
+  ['users', 'teams', 'items', 'auctionState'].forEach((k) => localStorage.removeItem(k));
+
+  alert('데이터가 초기화되었습니다.');
+  location.reload(); // 새로고침하여 완전히 깨끗한 상태로
+}
+
 function logout() {
   currentUser = null;
   sessionStorage.removeItem('currentUser');
@@ -357,7 +370,11 @@ function updateTeamListMasterPage() {
   createdTeamsList.innerHTML = '';
   teams.forEach((team) => {
     const leader = users.find((u) => u.id === team.leaderId);
-    createdTeamsList.innerHTML += `<li><span>${team.name} (팀장: ${leader ? leader.username : '없음'})</span></li>`;
+    createdTeamsList.innerHTML += `
+    <li>
+      <span>${team.name} (팀장: ${leader ? leader.username : '없음'})</span>
+      <button class="delete" onclick="deleteTeam('${team.id}')">삭제</button>
+    </li>`;
   });
 
   currentTeamLeadersList.innerHTML = '';
@@ -381,6 +398,64 @@ function removeTeamLeader(teamId) {
   team.leaderId = null;
   saveData();
   updateMasterPageLists();
+}
+
+function deleteTeam(teamId) {
+  // 진행 중 경매 보호
+  if (auctionState.isAuctionRunning) {
+    createTeamMessage.textContent = '경매 중에는 팀을 삭제할 수 없습니다.';
+    createTeamMessage.classList.add('red');
+    return;
+  }
+
+  const idx = teams.findIndex((t) => t.id === teamId);
+  if (idx === -1) return;
+  const team = teams[idx];
+
+  // 1) 삭제 불가 검증
+  if (team.itemsWon.length > 0) {
+    createTeamMessage.textContent = '낙찰된 매물이 있는 팀은 삭제할 수 없습니다.';
+    createTeamMessage.classList.add('red');
+    return;
+  }
+  const members = users.filter((u) => u.teamId === teamId);
+  if (members.length > 0) {
+    createTeamMessage.textContent = '팀원 배정이 남아 있습니다. 먼저 해제하세요.';
+    createTeamMessage.classList.add('red');
+    return;
+  }
+
+  // 2) 최종 확인
+  if (!confirm(`'${team.name}' 팀을 정말 삭제하시겠습니까?`)) return;
+
+  // 3) 팀장 복구
+  if (team.leaderId) {
+    const leader = users.find((u) => u.id === team.leaderId);
+    if (leader) {
+      leader.role = USER_ROLE.GENERAL;
+      leader.teamId = null;
+    }
+  }
+
+  // 4) 팀에게 귀속된 아이템 롤백
+  items.forEach((item) => {
+    if (item.bidderTeamId === teamId) {
+      item.status = 'unsold';
+      item.bidderTeamId = null;
+      item.bidPrice = 0;
+    }
+  });
+
+  // 5) teams 배열에서 제거
+  teams.splice(idx, 1);
+
+  saveData();
+  updateMasterPageLists();
+
+  createTeamMessage.textContent = '팀이 삭제되었습니다.';
+  createTeamMessage.classList.remove('red');
+  createTeamMessage.classList.add('green');
+  setTimeout(() => (createTeamMessage.textContent = ''), 3000);
 }
 
 // --- 매물 관리 ---
@@ -945,7 +1020,8 @@ function handleAuctionEndRound() {
       showCustomAlert(
         `<b>${itemName}</b> 님이<br>
          <b>${winningTeam.name}</b> 팀에<br>
-         <span style="font-size: 1.2em; color: var(--warning-color);">${price.toLocaleString()}P</span> 에 낙찰되었습니다!`
+         <span style="font-size: 1.2em; color: var(--warning-color);">${price.toLocaleString()}P</span> 에 낙찰되었습니다!`,
+        '낙찰 🎉'
       );
 
       winningTeam.points -= price;
@@ -985,7 +1061,7 @@ function endAuction() {
   });
 
   saveData();
-  alert('모든 경매가 종료되었습니다.');
+  showCustomAlert(`<b>모든 경매가 종료 되었습니다.</b><br/>아래로 스크롤하여 유찰 인원을 확인해주세요.`, '경매 종료');
   renderAuctionPage();
   updateAuctionControls();
 }
@@ -1003,7 +1079,7 @@ function startTimer() {
   }, 1000);
 }
 
-function showCustomAlert(message) {
+function showCustomAlert(message, title) {
   const oldModal = document.getElementById('customAlertModal');
   if (oldModal) oldModal.remove();
 
@@ -1012,7 +1088,7 @@ function showCustomAlert(message) {
   modal.classList.add('modal-overlay');
   modal.innerHTML = `
       <div class="modal-content" style="max-width: 420px; text-align: center;">
-        <div style="font-size:2.2em; margin-bottom:18px; color: var(--accent-color);">🎉 낙찰! 🎉</div>
+        <div style="font-size:2.2em; margin-bottom:18px; color: var(--accent-color);"> ${title} </div>
         <div style="margin-bottom:24px; font-size: 1.2em; line-height: 1.6;">${message}</div>
         <button id="customAlertCloseBtn" class="primary-btn">확인</button>
       </div>
@@ -1358,7 +1434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     teamInfoModal.addEventListener('click', (e) => {
       if (e.target === teamInfoModal) teamInfoModal.style.display = 'none';
     });
-
+  document.getElementById('resetDataBtn')?.addEventListener('click', resetAllData);
   window.addEventListener('storage', (event) => {
     if (['users', 'teams', 'items', 'auctionState'].includes(event.key)) {
       loadData();

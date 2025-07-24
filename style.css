@@ -50,6 +50,17 @@ body {
   flex-direction: column;
 }
 
+.btn {
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  min-width: 100px;
+  transition: background-color 0.3s ease;
+}
+
 /* --- Shared Header Styles --- */
 .page-header {
   display: flex;
@@ -79,20 +90,8 @@ body {
   color: var(--light-grey-text);
 }
 
-.logout-btn {
+.btn.logout {
   background-color: var(--danger-color);
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1em;
-  min-width: 100px;
-  transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: darken(var(--danger-color), 10%);
 }
 
 /* --- Login Page --- */
