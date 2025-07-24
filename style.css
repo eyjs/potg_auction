@@ -19,11 +19,85 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--primary-bg);
+  background: url('bg.png') no-repeat center center fixed;
+  background-size: cover;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   color: var(--text-color);
+  overflow-y: auto;
+}
+/* 로그인이 활성화된 순간 body 에 .login-page 클래스를 붙인다는 전제 */
+body.login-page {
+  /* 전체 화면을 배경으로 쓰기 때문에 스크롤 안 생기도록 */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* (1) 회색 래퍼(app-container) 투명화 + 여백 제거 */
+body.login-page .app-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* (2) 로그인 카드 크기·스타일 업그레이드 */
+body.login-page .login-box {
+  width: clamp(340px, 40vw, 580px); /* 화면 넓으면 자연스럽게 확대 */
+  padding: 3.5rem 3rem;
+  background: rgba(24, 29, 36, 0.75);
+  border-radius: 1.2rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* (3) 텍스트·버튼도 밝기·간격 조정(취향) */
+body.login-page .login-box h1 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  margin-bottom: 2rem;
+}
+body.login-page .login-box input {
+  height: 48px;
+  font-size: 1rem;
+}
+body.login-page .login-box button {
+  height: 52px;
+  font-size: 1.05rem;
+}
+
+/* ① 경매 진행 중 (body.auction-running) ---------------------------------- */
+body.auction-running {
+  overflow: hidden; /* 브라우저 자체 스크롤 잠금 */
+}
+
+body.auction-running .auction-wrapper {
+  /* 전체 경매 레이아웃에만 축소 적용 */
+  transform: scale(0.9); /* 필요하면 .85 ~ .95 사이 조절 */
+  transform-origin: top center; /* 위에서 줄어들도록 기준점 지정 */
+}
+
+/* 글자가 너무 작게 느껴지면 버튼·타이틀만 원래 크기로 보정 예시 */
+body.auction-running .auction-wrapper h2,
+body.auction-running .auction-wrapper button.large {
+  transform: scale(1.1);
+}
+
+/* ② 경매 종료 후 (body.auction-ended) ----------------------------------- */
+body.auction-ended {
+  overflow-y: auto; /* 세로 스크롤 허용 */
+}
+
+body.auction-ended .auction-wrapper {
+  transform: none; /* 축소 해제 – 원본 크기 */
+}
+
+/* ③ 리스트·결과 패널 자체 스크롤 (공통) ------------------------------ */
+.auction-wrapper .scroll-area {
+  max-height: calc(100vh - 240px); /* 헤더·타이머 등을 뺀 나머지 높이 */
   overflow-y: auto;
 }
 

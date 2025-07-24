@@ -171,6 +171,14 @@ function showPage(pageId) {
   });
   document.getElementById(pageId).classList.add('active');
 
+  // ② 경매용 레이아웃 클래스/스타일 초기화 --------------------
+  document.body.classList.remove('auction-running', 'auction-ended');
+  // 혹시 남아 있을 scale 제거
+  const wrap = document.querySelector('.auction-wrapper');
+  if (wrap) wrap.style.transform = 'none';
+  // body 스크롤 복원
+  document.body.style.overflowY = 'auto';
+
   if (pageId === 'auctionPage') {
     auctionUsernameDisplay.textContent = currentUser ? currentUser.username : '게스트';
     goToMasterPageBtn.style.display = currentUser && currentUser.role === USER_ROLE.MASTER ? 'inline-block' : 'none';
@@ -179,6 +187,8 @@ function showPage(pageId) {
     masterUsernameDisplay.textContent = currentUser ? currentUser.username : '게스트';
     renderMasterPage();
   }
+
+  document.body.classList.toggle('login-page', pageId === 'loginPage');
 }
 
 // --- 로그인 및 로그아웃 ---
@@ -871,6 +881,7 @@ function handleEndAuction(messageElement) {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
   auctionState.isAuctionRunning = false;
   auctionState.isAuctionPaused = true;
+
   endAuction();
   if (messageElement) {
     messageElement.textContent = '경매가 종료되었습니다. 유찰 인원을 배정해주세요.';
@@ -1053,7 +1064,7 @@ function handleAuctionEndRound() {
 function endAuction() {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
   auctionState.isAuctionRunning = false;
-
+  auctionState.isEnded = true;
   items.forEach((item) => {
     if (item.status === 'pending') {
       item.status = 'unsold';
@@ -1165,6 +1176,12 @@ function renderAuctionPage() {
   } else {
     unbidItemAssignmentAuctionPage.style.display = 'none';
   }
+
+  const running = auctionState.isAuctionRunning; // 진행 중?
+  const ended = !running && auctionState.isEnded; // 종료 후? (flag 하나 더 두는 게 편합니다)
+
+  document.body.classList.toggle('auction-running', running);
+  document.body.classList.toggle('auction-ended', ended);
 }
 
 function updateAuctionDisplay(item) {
