@@ -788,25 +788,48 @@ function handleAuctionEndRound() {
     endAuction();
     return;
   }
+
+  // 입찰이 성공적으로 이루어졌는지 확인
   if (auctionState.currentBid > 0 && auctionState.currentBidderTeamId) {
     const winningTeam = teams.find((t) => t.id === auctionState.currentBidderTeamId);
+
+    // 팀 슬롯이 가득 차지 않았는지 최종 확인
     if (winningTeam && winningTeam.itemsWon.length < maxTeamItems) {
-      winningTeam.points -= auctionState.currentBid;
+      // --- NEW: 낙찰 팝업 표시 로직 ---
+      const price = auctionState.currentBid;
+      const itemName = currentItem.participantId
+        ? users.find((u) => u.id === currentItem.participantId)?.username || currentItem.name
+        : currentItem.name;
+
+      // 기존 레이아웃 팝업을 호출하여 낙찰 정보를 표시
+      showCustomAlert(
+        `<b>${itemName}</b> 님이<br>
+         <b>${winningTeam.name}</b> 팀에<br>
+         <span style="font-size: 1.2em; color: var(--warning-color);">${price.toLocaleString()}P</span> 에 낙찰되었습니다!`
+      );
+      // --- 로직 추가 끝 ---
+
+      // 기존 데이터 처리 로직
+      winningTeam.points -= price;
       winningTeam.itemsWon.push(currentItem.id);
       currentItem.status = 'sold';
       currentItem.bidderTeamId = winningTeam.id;
-      currentItem.bidPrice = auctionState.currentBid;
+      currentItem.bidPrice = price;
       if (currentItem.participantId) {
         const user = users.find((u) => u.id === currentItem.participantId);
         if (user) user.teamId = winningTeam.id;
       }
     } else {
+      // 낙찰되었으나 팀이 꽉 찬 경우 등 예외상황 -> 유찰 처리
       currentItem.status = 'unsold';
     }
   } else {
+    // 입찰자가 없는 경우 -> 유찰 처리
     currentItem.status = 'unsold';
   }
+
   saveData();
+
   if (isAuctionEndable()) {
     endAuction();
   } else {
@@ -874,7 +897,6 @@ function showCustomAlert(message) {
   document.body.appendChild(modal);
   document.getElementById('customAlertCloseBtn').onclick = () => modal.remove();
 }
-// --- 마스터 입찰 로직 ---
 function masterBid(teamId, incrementAmount) {
   if (!currentUser || currentUser.role !== USER_ROLE.MASTER) return;
   const currentItem = items[auctionState.currentAuctionItemIndex];
@@ -882,13 +904,14 @@ function masterBid(teamId, incrementAmount) {
   const biddingTeam = teams.find((t) => t.id === teamId);
   if (!biddingTeam) return;
 
+  if (biddingTeam.itemsWon.length >= maxTeamItems) {
+    alert(`${biddingTeam.name} 팀은 이미 최대 매물을 보유하고 있습니다!`);
+    return;
+  }
+
   const newBid = auctionState.currentBid + incrementAmount;
   if (biddingTeam.points < newBid) {
     alert(`${biddingTeam.name} 팀의 포인트가 부족합니다!`);
-    return;
-  }
-  if (biddingTeam.itemsWon.length >= maxTeamItems) {
-    alert(`${biddingTeam.name} 팀은 이미 최대 매물을 보유하고 있습니다!`);
     return;
   }
 
@@ -896,28 +919,19 @@ function masterBid(teamId, incrementAmount) {
   auctionState.currentBidderTeamId = biddingTeam.id;
   auctionState.currentAuctionStartTime = Date.now();
 
-  // --- BUG FIX ---
-  // 원인: 기존 코드는 팀장의 개인 포인트(user.points)를 확인했습니다.
-  // 이 포인트는 낙찰 후에도 차감되지 않아 로직에 오류가 있었습니다.
-  // 해결: 실제 경매 화폐인 팀 포인트(team.points)를 확인하도록 수정합니다.
-  const otherTeams = teams.filter((t) => t.id !== teamId);
-  const allOpponentsCantBid = otherTeams.every((team) => team.points <= newBid);
+  const potentialOpponents = teams.filter((team) => team.id !== teamId && team.itemsWon.length < maxTeamItems);
 
-  // 만약 새로운 입찰가가 다른 모든 팀이 이길 수 없는 금액이라면 즉시 낙찰시킵니다.
+  const allOpponentsCantBid = potentialOpponents.every((team) => team.points <= newBid);
+
   if (allOpponentsCantBid) {
-    const winner = users.find((u) => u.teamId === biddingTeam.id && u.role === USER_ROLE.TEAM_LEADER);
-    const winnerName = winner ? winner.username : '팀장';
-    showCustomAlert(
-      `"${currentItem.name}" 매물이<br><b>${winnerName}</b> 님이 속한 <b>${biddingTeam.name}</b> 팀에 낙찰되었습니다!`
-    );
+    // --- UPDATED: 기존 팝업 호출 제거 ---
+    // 팝업 로직이 handleAuctionEndRound로 일원화되었으므로 여기서는 제거합니다.
     auctionState.timer = 0;
     if (auctionState.intervalId) clearInterval(auctionState.intervalId);
     handleAuctionEndRound();
-    return; // 즉시 낙찰 후 함수 종료
+    return;
   }
-  // --- BUG FIX END ---
 
-  // 남은 시간이 10초 이하일 때 추가 시간 부여
   if (auctionState.timer <= 10) {
     auctionState.timer += auctionState.bidExtraTime;
   }
