@@ -2,145 +2,201 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <title>Auction System (MVC)</title>
-    <link rel="stylesheet" href="./css/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>경매 시스템</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <div class="app-container">
-      <!-- 로그인 페이지 -->
       <div id="loginPage" class="page-container active">
         <div class="login-box">
-          <h2>경매 로그인</h2>
-          <input id="loginUsername" placeholder="아이디" />
-          <input id="loginPassword" type="password" placeholder="비밀번호" />
+          <h2>경매 시스템</h2>
+          <input type="text" id="loginUsername" placeholder="사용자 이름" />
+          <input type="password" id="loginPassword" placeholder="비밀번호" />
           <button id="loginBtn">로그인</button>
-          <div id="loginMessage" class="message"></div>
+          <p id="loginMessage" class="message"></p>
         </div>
       </div>
 
-      <!-- 마스터 페이지 -->
       <div id="masterPage" class="page-container">
         <header class="page-header">
           <h1 class="page-title">마스터 페이지</h1>
-          <div class="header-right">
-            <span class="user-display" id="masterUsernameDisplay"></span>
-            <button id="logoutBtnMaster" class="logout-btn">로그아웃</button>
+          <div>
+            <div class="header-right">
+              <span class="user-display">로그인: <span id="masterUsernameDisplay"></span></span>
+            </div>
+            <div>
+              <button id="goToAuctionPageBtn" class="secondary-btn" style="margin-right: 10px; display: inline-block">
+                경매 페이지로 이동
+              </button>
+              <button id="logoutBtnMaster" class="logout-btn">로그아웃</button>
+            </div>
           </div>
         </header>
-
         <main class="master-main-grid">
-          <!-- 유저 등록 -->
-          <section class="master-section">
-            <h2>유저 등록</h2>
+          <section class="master-section user-management">
+            <h2>사용자 관리</h2>
             <div class="input-group">
-              <input id="regUsername" placeholder="이름" />
-              <input id="regPassword" placeholder="비밀번호" />
-              <button id="registerUserBtn" class="primary-btn">등록</button>
+              <input type="text" id="regUsername" placeholder="새 사용자 이름" />
+              <input type="password" id="regPassword" placeholder="비밀번호" />
+              <button id="registerUserBtn" class="primary-btn">사용자 등록</button>
             </div>
-            <ul id="availableUsersList" class="list-display"></ul>
+            <p id="regUserMessage" class="message"></p>
+            <button id="scaffoldBtn" class="secondary-btn full-width">
+              초기 데이터 스캐폴드 (경고: 모든 데이터 초기화!)
+            </button>
+            <p id="scaffoldMessage" class="message"></p>
           </section>
 
-          <!-- 팀 관리 -->
-          <section class="master-section">
+          <section class="master-section team-management">
             <h2>팀 관리</h2>
             <div class="input-group">
-              <input id="teamNameInput" placeholder="팀 이름" />
+              <input type="text" id="teamNameInput" placeholder="팀 이름" />
               <button id="createTeamBtn" class="primary-btn">팀 생성</button>
             </div>
-            <h3>생성된 팀</h3>
+            <p id="createTeamMessage" class="message"></p>
+            <h3>생성된 팀 목록</h3>
             <ul id="createdTeamsList" class="list-display"></ul>
-
-            <h3>팀장 목록</h3>
-            <ul id="currentTeamLeadersList" class="list-display"></ul>
           </section>
 
-          <!-- 매물 관리 -->
-          <section class="master-section">
+          <section class="master-section item-management">
             <h2>매물 관리</h2>
             <div class="input-group">
-              <input id="itemNameInput" placeholder="매물 이름" />
-              <input id="itemDescInput" placeholder="매물 설명" />
-              <input id="itemImageInput" placeholder="이미지 URL" />
-              <button id="addItemBtn" class="primary-btn">매물 등록</button>
+              <input type="text" id="itemNameInput" placeholder="매물 이름" />
+              <input type="text" id="itemDescInput" placeholder="매물 설명 (선택 사항)" />
+              <input type="text" id="itemImageInput" placeholder="매물 이미지 URL (선택 사항)" />
+              <button id="addItemBtn" class="primary-btn">매물 추가</button>
             </div>
+            <p id="addItemMessage" class="message"></p>
+            <h3>등록된 매물 목록</h3>
             <ul id="registeredItemsList" class="list-display"></ul>
           </section>
 
-          <!-- 경매 컨트롤 -->
-          <section class="master-section">
-            <h2>경매 컨트롤</h2>
-            <div class="auction-master-controls">
-              <button id="masterStartAuctionBtn" class="control-btn green">경매 시작</button>
-              <button id="masterStopAuctionBtn" class="control-btn red">경매 중지</button>
-              <button id="masterNextAuctionBtn" class="control-btn blue">다음 매물</button>
-              <div id="auctionMasterMessage" class="message"></div>
-            </div>
-
-            <!-- 현재 매물 -->
-            <div class="auction-item-box">
-              <img id="masterCurrentItemImage" style="display: none" class="auction-item-image" />
-              <div id="masterCurrentItemName"></div>
-              <div id="masterCurrentItemDescription"></div>
-              <div id="masterCurrentBidInfo" class="bid-info">
-                <p>현재 입찰가: <span id="masterCurrentBidValue">0</span></p>
-                <p>입찰 팀: <span id="masterCurrentBidTeam">없음</span></p>
+          <section class="master-section team-leader-assignment">
+            <h2>팀장 배정</h2>
+            <p class="description">왼쪽에서 일반 사용자를 끌어와 오른쪽 팀에 놓아 팀장으로 배정하세요.</p>
+            <div class="dnd-container">
+              <div class="dnd-list-box">
+                <h3>사용 가능 사용자 (일반)</h3>
+                <ul id="availableUsersList" class="dnd-list"></ul>
               </div>
-              <div id="masterTimeCount" class="time-count"></div>
-              <div id="masterNoItemMessage" class="no-item-message" style="display: none">경매 대기 중</div>
+              <div class="dnd-list-box">
+                <h3>팀 목록 (팀장 지정)</h3>
+                <ul id="dndTeamsList" class="dnd-list drop-target"></ul>
+              </div>
             </div>
+            <p id="dndAssignMessage" class="message"></p>
+            <h3>현재 팀장 목록</h3>
+            <ul id="currentTeamLeadersList" class="list-display"></ul>
+          </section>
+
+          <section class="master-section">
+            <h2>변수값 설정</h2>
+            <div class="input-group" style="flex-direction: column">
+              <label for="auctionDurationInput">기본 경매 시간 (초)</label>
+              <input type="number" id="auctionDurationInput" placeholder="예: 30" />
+            </div>
+            <div class="input-group" style="flex-direction: column; margin-top: 15px">
+              <label for="bidExtraTimeInput">입찰 시 추가 시간 (초)</label>
+              <input type="number" id="bidExtraTimeInput" placeholder="예: 10" />
+            </div>
+            <button id="saveSettingsBtn" class="primary-btn" style="margin-top: 20px">설정 저장</button>
+            <p id="settingsMessage" class="message"></p>
           </section>
         </main>
       </div>
 
-      <!-- 경매 페이지 -->
       <div id="auctionPage" class="page-container">
         <header class="page-header">
-          <h1 class="page-title">경매 페이지</h1>
-          <div class="header-right">
-            <span class="user-display" id="auctionUsernameDisplay"></span>
-            <button id="logoutBtnAuction" class="logout-btn">로그아웃</button>
+          <h1 class="page-title">경매 진행</h1>
+          <div>
+            <div class="header-right">
+              <span class="user-display">로그인: <span id="auctionUsernameDisplay"></span></span>
+            </div>
+            <div>
+              <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">
+                관리자 패널로 이동
+              </button>
+              <button id="logoutBtnAuction" class="logout-btn">로그아웃</button>
+            </div>
           </div>
         </header>
-
         <main class="auction-main-grid">
-          <!-- 팀 리스트 -->
           <section class="auction-panel team-list-area">
-            <h2>팀 목록</h2>
+            <h2>참여 팀 현황</h2>
             <div id="teamListContainer" class="team-list-grid"></div>
           </section>
 
-          <!-- 경매 아이템 -->
           <section class="auction-panel auction-item-area">
             <div class="auction-item-box">
-              <img id="auctionCurrentItemImage" style="display: none" class="auction-item-image" />
-              <div id="auctionCurrentItemName"></div>
-              <div id="auctionCurrentItemDescription"></div>
-              <div id="auctionCurrentBidInfo" class="bid-info">
-                <p>현재 입찰가: <span id="auctionCurrentBidValue">0</span></p>
-                <p>입찰 팀: <span id="auctionCurrentBidTeam">없음</span></p>
+              <p id="noItemMessage" class="no-item-message" style="display: none">현재 진행 중인 매물이 없습니다.</p>
+              <div class="item-visual-area">
+                <img
+                  id="currentItemImage"
+                  src=""
+                  alt="경매 매물 이미지"
+                  class="auction-item-image"
+                  style="display: none"
+                />
               </div>
-              <div id="auctionTimeCount" class="time-count"></div>
-              <div id="auctionNoItemMessage" class="no-item-message" style="display: none">경매 대기 중</div>
+              <div class="item-info-area">
+                <h2 id="currentItemName"></h2>
+                <p id="currentItemDescription"></p>
+                <div id="currentBidInfo" class="bid-info" style="display: none">
+                  <p>현재가: <span id="currentBidValue">0</span> P</p>
+                  <p>최고 입찰 팀: <span id="currentBidTeam">없음</span></p>
+                  <p id="timeCount" class="time-count">남은 시간: 00초</p>
+                </div>
+              </div>
             </div>
-            <div id="auctionPageMasterControls" class="auction-master-controls">
+            <div id="auctionPageMasterControls" class="auction-master-controls" style="display: none">
               <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
-              <button id="auctionPageStopAuctionBtn" class="control-btn red">경매 중지</button>
               <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
-              <div id="auctionPageMasterMessage" class="message"></div>
+              <button id="auctionPageStopAuctionBtn" class="control-btn red">경매 중지</button>
+              <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
+              <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
+              <p id="auctionPageMasterMessage" class="message"></p>
             </div>
+            <button id="bidButton" class="bid-button" style="display: none"></button>
           </section>
 
-          <!-- 참가자 -->
           <section class="auction-panel participant-grid-area">
-            <h2>참가자</h2>
+            <h2>참여자 현황</h2>
             <div id="participantGrid" class="participant-grid"></div>
+          </section>
+
+          <section
+            id="unbidItemAssignmentAuctionPage"
+            class="master-section unbid-item-assignment"
+            style="display: none"
+          >
+            <h2>유찰 인원 배정</h2>
+            <p class="description">왼쪽에서 유찰된 인원을 끌어와 오른쪽 팀에 놓아 배정하세요.</p>
+            <div class="dnd-container">
+              <div class="dnd-list-box">
+                <h3>유찰 인원</h3>
+                <ul id="unbidItemsListAuctionPage" class="dnd-list"></ul>
+              </div>
+              <div class="dnd-list-box">
+                <h3>팀 목록 (배정)</h3>
+                <ul id="unbidItemsTeamsListAuctionPage" class="dnd-list drop-target"></ul>
+              </div>
+            </div>
+            <p id="unbidItemAssignMessageAuctionPage" class="message"></p>
+          </section>
+
+          <section id="auctionResultsSection" class="auction-results-section" style="display: none">
+            <h2>경매 결과</h2>
+            <p>경매가 모두 종료되었습니다. 아래 버튼을 통해 결과를 다운로드할 수 있습니다.</p>
+            <div class="button-group">
+              <button id="downloadTeamResultsBtn" class="download-btn yellow">팀별 배치 결과 다운로드 (HTML)</button>
+              <button id="downloadJsonDataBtn" class="download-btn purple">전체 데이터 다운로드 (JSON)</button>
+            </div>
           </section>
         </main>
       </div>
     </div>
 
-    <!-- 엔트리 포인트 스크립트 -->
-    <script type="module" src="./js/app-master.js"></script>
-    <script type="module" src="./js/app-auction.js"></script>
+    <script src="./script.js"></script>
   </body>
 </html>

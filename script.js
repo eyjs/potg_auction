@@ -1,7 +1,5 @@
 /* 상수 정리 */
 const maxTeamItems = 4; // 팀당 최대 매물 수
-const timer = 30;
-const bidTimer = 10;
 
 // 사용자 역할 상수
 const USER_ROLE = {
@@ -18,13 +16,15 @@ let items = JSON.parse(localStorage.getItem('items')) || [];
 
 let auctionState = JSON.parse(localStorage.getItem('auctionState')) || {
   currentAuctionItemIndex: -1,
-  timer: timer,
+  timer: 30, // 이 값은 auctionState.auctionDuration으로 대체됨
   intervalId: null, // setInterval ID
   currentBid: 0,
   currentBidderTeamId: null,
   isAuctionRunning: false, // 경매 전체가 시작되었는지 여부
   isAuctionPaused: true, // 현재 매물 경매가 일시정지 상태인지 여부 (예: 다음 매물 대기 중)
   currentAuctionStartTime: 0, // 경매가 시작된 시간 (리로드 시 타이머 동기화용)
+  auctionDuration: 30, // NEW: 기본 경매 시간 (초)
+  bidExtraTime: 10, // NEW: 입찰 시 추가 시간 (초)
 };
 
 // 현재 로그인한 사용자 정보 (sessionStorage에 저장)
@@ -90,18 +90,26 @@ const auctionPageStartAuctionBtn = document.getElementById('auctionPageStartAuct
 const auctionPageNextAuctionBtn = document.getElementById('auctionPageNextAuctionBtn');
 const auctionPageStopAuctionBtn = document.getElementById('auctionPageStopAuctionBtn');
 const auctionPageEndAuctionBtn = document.getElementById('auctionPageEndAuctionBtn');
+const addTimeBtnAuctionPage = document.getElementById('addTimeBtnAuctionPage');
 const auctionPageMasterMessage = document.getElementById('auctionPageMasterMessage');
 
 const participantGrid = document.getElementById('participantGrid');
 
-const unbidItemAssignmentSection = document.getElementById('unbidItemAssignmentSection');
-const unbidItemsListMasterPage = document.getElementById('unbidItemsListMasterPage');
-const unbidItemsTeamsListMasterPage = document.getElementById('unbidItemsTeamsListMasterPage');
-const unbidItemAssignMessageMasterPage = document.getElementById('unbidItemAssignMessageMasterPage');
+// NEW: 유찰 매물 배정 (경매 페이지)
+const unbidItemAssignmentAuctionPage = document.getElementById('unbidItemAssignmentAuctionPage');
+const unbidItemsListAuctionPage = document.getElementById('unbidItemsListAuctionPage');
+const unbidItemsTeamsListAuctionPage = document.getElementById('unbidItemsTeamsListAuctionPage');
+const unbidItemAssignMessageAuctionPage = document.getElementById('unbidItemAssignMessageAuctionPage');
 
 const auctionResultsSection = document.getElementById('auctionResultsSection');
 const downloadTeamResultsBtn = document.getElementById('downloadTeamResultsBtn');
 const downloadJsonDataBtn = document.getElementById('downloadJsonDataBtn');
+
+// NEW: 변수 설정
+const auctionDurationInput = document.getElementById('auctionDurationInput');
+const bidExtraTimeInput = document.getElementById('bidExtraTimeInput');
+const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const settingsMessage = document.getElementById('settingsMessage');
 
 // --- 초기 데이터 설정 ---
 function initializeData() {
@@ -199,16 +207,9 @@ function renderMasterPage() {
   if (!currentUser || currentUser.role !== USER_ROLE.MASTER) return;
   masterUsernameDisplay.textContent = currentUser.username;
   updateMasterPageLists();
+  loadSettings(); // NEW: 설정값 로드
   scaffoldMessage.textContent = '';
   updateAuctionControls();
-
-  if (isAuctionEndable() && !auctionState.isAuctionRunning) {
-    unbidItemAssignmentSection.style.display = 'flex';
-    populateUnbidItemsList(unbidItemsListMasterPage);
-    populateUnbidItemsTeamsList(unbidItemsTeamsListMasterPage);
-  } else {
-    unbidItemAssignmentSection.style.display = 'none';
-  }
 }
 
 function updateMasterPageLists() {
@@ -216,8 +217,6 @@ function updateMasterPageLists() {
   populateDndTeamsList();
   updateTeamListMasterPage();
   updateRegisteredItemsList();
-  populateUnbidItemsList(unbidItemsListMasterPage);
-  populateUnbidItemsTeamsList(unbidItemsTeamsListMasterPage);
 }
 
 registerUserBtn.addEventListener('click', () => {
@@ -467,7 +466,7 @@ function populateUnbidItemsList(listElement) {
     });
 }
 
-function populateUnbidItemsTeamsList(listElement) {
+function populateUnbidItemsTeamsList(listElement, messageElement) {
   listElement.innerHTML = '';
   teams.forEach((team) => {
     const li = document.createElement('li');
@@ -485,7 +484,7 @@ function populateUnbidItemsTeamsList(listElement) {
       assignUnbidUserToTeam(
         e.dataTransfer.getData('text/plain'),
         e.target.closest('.dnd-team-item').dataset.teamId,
-        unbidItemAssignMessageMasterPage
+        messageElement
       );
     });
     listElement.appendChild(li);
@@ -496,6 +495,14 @@ function assignUnbidUserToTeam(userId, teamId, messageElement) {
   const user = users.find((u) => u.id === userId);
   const team = teams.find((t) => t.id === teamId);
   if (!user || !team) return;
+
+  // 이미 배정된 사용자인지 다시 한번 확인
+  if (user.teamId !== null) {
+    console.warn(`${user.username} is already assigned to a team.`);
+    renderAuctionPage(); // UI를 동기화하여 목록에서 제거
+    return;
+  }
+
   if (team.itemsWon.length >= maxTeamItems) {
     messageElement.textContent = `${team.name} 팀은 가득 찼습니다.`;
     messageElement.classList.add('red');
@@ -510,11 +517,44 @@ function assignUnbidUserToTeam(userId, teamId, messageElement) {
   item.bidderTeamId = team.id;
   user.teamId = team.id;
   team.itemsWon.push(item.id);
-  saveData();
+
   messageElement.textContent = `'${user.username}' 님이 '${team.name}' 팀에 배정되었습니다.`;
   messageElement.classList.add('green');
-  updateMasterPageLists();
+
+  saveData();
+
+  // BUG FIX: UI가 즉시 업데이트되지 않는 문제를 해결하기 위해 수동으로 화면을 새로고침합니다.
+  renderAuctionPage();
 }
+
+// --- 변수 설정 기능 ---
+function loadSettings() {
+  auctionDurationInput.value = auctionState.auctionDuration || 30;
+  bidExtraTimeInput.value = auctionState.bidExtraTime || 10;
+}
+
+function saveSettings() {
+  const newDuration = parseInt(auctionDurationInput.value, 10);
+  const newExtraTime = parseInt(bidExtraTimeInput.value, 10);
+
+  if (isNaN(newDuration) || newDuration <= 0 || isNaN(newExtraTime) || newExtraTime <= 0) {
+    settingsMessage.textContent = '유효한 양수 값을 입력하세요.';
+    settingsMessage.classList.add('red');
+    return;
+  }
+
+  auctionState.auctionDuration = newDuration;
+  auctionState.bidExtraTime = newExtraTime;
+  saveData();
+
+  settingsMessage.textContent = '설정이 저장되었습니다.';
+  settingsMessage.classList.remove('red');
+  settingsMessage.classList.add('green');
+  setTimeout(() => {
+    settingsMessage.textContent = '';
+  }, 3000);
+}
+
 // --- 스캐폴드 ---
 scaffoldBtn.addEventListener('click', () => {
   if (!confirm('기존 데이터를 모두 초기화하고 테스트 데이터를 생성하시겠습니까?')) return;
@@ -523,8 +563,9 @@ scaffoldBtn.addEventListener('click', () => {
   teams = [];
   items = [];
   auctionState = {
+    ...auctionState, // 보존할 설정값 (duration, extraTime)
     currentAuctionItemIndex: -1,
-    timer: timer,
+    timer: auctionState.auctionDuration,
     intervalId: null,
     currentBid: 0,
     currentBidderTeamId: null,
@@ -606,20 +647,23 @@ function handleStartAuction(messageElement) {
   renderAuctionPage();
 }
 
-function handleEndAuction() {
+function handleEndAuction(messageElement) {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
-
-  auctionState = { ...auctionState, isAuctionRunning: true, isAuctionPaused: true, currentAuctionItemIndex: -1 };
-
+  auctionState.isAuctionRunning = false;
+  auctionState.isAuctionPaused = true;
   endAuction();
-  messageElement.textContent = '경매가 종료되었습니다. 유찰을 클릭하세요.';
-  messageElement.classList.add('green');
+  if (messageElement) {
+    messageElement.textContent = '경매가 종료되었습니다. 유찰 인원을 배정해주세요.';
+    messageElement.classList.add('green');
+  }
 }
+
 function handleStopAuction(messageElement) {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
 
   // 경매 상태 및 데이터 초기화
   auctionState = {
+    ...auctionState,
     currentAuctionItemIndex: -1,
     timer: 0,
     intervalId: null,
@@ -640,7 +684,7 @@ function handleStopAuction(messageElement) {
     t.points = 10000;
   });
   users.forEach((u) => {
-    if (u.role !== USER_ROLE.MASTER) u.teamId = null;
+    if (u.role !== USER_ROLE.MASTER && u.role !== USER_ROLE.TEAM_LEADER) u.teamId = null;
   });
 
   saveData();
@@ -659,20 +703,45 @@ function handleNextAuction() {
   startNextAuction();
 }
 
+function handleAddTime() {
+  if (!currentUser || currentUser.role !== USER_ROLE.MASTER) return;
+  if (auctionState.isAuctionRunning && !auctionState.isAuctionPaused && auctionState.timer > 0) {
+    auctionState.timer += 10;
+    saveData();
+    timeCountDisplay.textContent = `남은 시간: ${String(auctionState.timer).padStart(2, '0')}초`;
+    auctionPageMasterMessage.textContent = '+10초가 추가되었습니다.';
+    auctionPageMasterMessage.classList.add('green');
+    setTimeout(() => {
+      auctionPageMasterMessage.textContent = '';
+      auctionPageMasterMessage.classList.remove('green');
+    }, 2000);
+  } else {
+    auctionPageMasterMessage.textContent = '경매 진행 중에만 시간을 추가할 수 있습니다.';
+    auctionPageMasterMessage.classList.add('red');
+    setTimeout(() => {
+      auctionPageMasterMessage.textContent = '';
+      auctionPageMasterMessage.classList.remove('red');
+    }, 2000);
+  }
+}
+
 auctionPageStartAuctionBtn.addEventListener('click', () => handleStartAuction(auctionPageMasterMessage));
 auctionPageStopAuctionBtn.addEventListener('click', () => handleStopAuction(auctionPageMasterMessage));
 auctionPageEndAuctionBtn.addEventListener('click', () => handleEndAuction(auctionPageMasterMessage));
 auctionPageNextAuctionBtn.addEventListener('click', handleNextAuction);
+addTimeBtnAuctionPage.addEventListener('click', handleAddTime);
 
 function updateAuctionControls() {
   const isEnded = isAuctionEndable();
   const canStart = !auctionState.isAuctionRunning || isEnded;
   const canStop = auctionState.isAuctionRunning;
   const canNext = auctionState.isAuctionRunning && auctionState.isAuctionPaused && !isEnded;
+  const canAddTime = auctionState.isAuctionRunning && !auctionState.isAuctionPaused;
 
   [auctionPageStartAuctionBtn].forEach((btn) => (btn.disabled = !canStart));
-  [auctionPageStopAuctionBtn].forEach((btn) => (btn.disabled = !canStop));
+  [auctionPageStopAuctionBtn, auctionPageEndAuctionBtn].forEach((btn) => (btn.disabled = !canStop));
   [auctionPageNextAuctionBtn].forEach((btn) => (btn.disabled = !canNext));
+  [addTimeBtnAuctionPage].forEach((btn) => (btn.disabled = !canAddTime));
 }
 
 function startNextAuction() {
@@ -699,7 +768,7 @@ function startNextAuction() {
       currentAuctionItemIndex: nextItemIndex,
       currentBid: 0,
       currentBidderTeamId: null,
-      timer: timer,
+      timer: auctionState.auctionDuration, // Use configured duration
       isAuctionPaused: false,
       currentAuctionStartTime: Date.now(),
     };
@@ -750,25 +819,16 @@ function endAuction() {
   if (auctionState.intervalId) clearInterval(auctionState.intervalId);
   auctionState.isAuctionRunning = false;
 
-  if (items.map((item) => item.status === 'pending')) {
-    items.forEach((item) => {
-      if (item.status === 'pending') {
-        item.status = 'unsold';
-        item.bidderTeamId = null;
-        item.bidPrice = 0;
-      }
-    });
-  }
+  items.forEach((item) => {
+    if (item.status === 'pending') {
+      item.status = 'unsold';
+    }
+  });
 
   saveData();
   alert('모든 경매가 종료되었습니다.');
   renderAuctionPage();
   updateAuctionControls();
-
-  // 경매 종료 시 결과 다운로드 버튼/섹션 표시
-  auctionResultsSection.style.display = 'block';
-  downloadTeamResultsBtn.style.display = 'inline-block';
-  downloadJsonDataBtn.style.display = 'inline-block';
 }
 
 function startTimer() {
@@ -783,6 +843,7 @@ function startTimer() {
     }
   }, 1000);
 }
+
 function showCustomAlert(message) {
   // 이미 있으면 제거
   const oldModal = document.getElementById('customAlertModal');
@@ -835,15 +896,15 @@ function masterBid(teamId, incrementAmount) {
   auctionState.currentBidderTeamId = biddingTeam.id;
   auctionState.currentAuctionStartTime = Date.now();
 
-  const otherTeamLeaders = teams
-    .filter((t) => t.id !== teamId)
-    .map((t) => users.find((u) => u.id === t.leaderId))
-    .filter((u) => u && typeof u.points === 'number');
-  const allOthersLowerOrEqual = otherTeamLeaders.every((leader) => leader.points <= newBid);
+  // --- BUG FIX ---
+  // 원인: 기존 코드는 팀장의 개인 포인트(user.points)를 확인했습니다.
+  // 이 포인트는 낙찰 후에도 차감되지 않아 로직에 오류가 있었습니다.
+  // 해결: 실제 경매 화폐인 팀 포인트(team.points)를 확인하도록 수정합니다.
+  const otherTeams = teams.filter((t) => t.id !== teamId);
+  const allOpponentsCantBid = otherTeams.every((team) => team.points <= newBid);
 
-  // 다른 팀장들이 낼 수 없는 가격(같거나 작을 때) 즉시 낙찰
-  if (allOthersLowerOrEqual) {
-    // 낙찰자 정보 alert 추가
+  // 만약 새로운 입찰가가 다른 모든 팀이 이길 수 없는 금액이라면 즉시 낙찰시킵니다.
+  if (allOpponentsCantBid) {
     const winner = users.find((u) => u.teamId === biddingTeam.id && u.role === USER_ROLE.TEAM_LEADER);
     const winnerName = winner ? winner.username : '팀장';
     showCustomAlert(
@@ -852,10 +913,15 @@ function masterBid(teamId, incrementAmount) {
     auctionState.timer = 0;
     if (auctionState.intervalId) clearInterval(auctionState.intervalId);
     handleAuctionEndRound();
-    return;
+    return; // 즉시 낙찰 후 함수 종료
+  }
+  // --- BUG FIX END ---
+
+  // 남은 시간이 10초 이하일 때 추가 시간 부여
+  if (auctionState.timer <= 10) {
+    auctionState.timer += auctionState.bidExtraTime;
   }
 
-  auctionState.timer += auctionState.timer <= 10 ? bidTimer : 0;
   saveData();
   updateBidInfo();
   renderParticipantGrid();
@@ -868,21 +934,29 @@ function renderAuctionPage() {
   updateAuctionDisplay(currentItem);
   updateAuctionControls();
 
-  // 경매 종료 상태에 따라 결과 버튼/섹션 표시 제어
-  if (!auctionState.isAuctionRunning && isAuctionEndable()) {
+  const auctionIsOver = isAuctionEndable();
+  const hasUnbidUsers = users.some((u) => u.role === USER_ROLE.GENERAL && u.teamId === null);
+
+  // 경매 종료 후 결과 섹션 표시
+  if (auctionIsOver && !auctionState.isAuctionRunning) {
     auctionResultsSection.style.display = 'block';
-    downloadTeamResultsBtn.style.display = 'inline-block';
-    downloadJsonDataBtn.style.display = 'inline-block';
   } else {
     auctionResultsSection.style.display = 'none';
-    downloadTeamResultsBtn.style.display = 'none';
-    downloadJsonDataBtn.style.display = 'none';
+  }
+
+  // 경매 종료 후 유찰자 배정 섹션 표시 (마스터에게만)
+  if (auctionIsOver && hasUnbidUsers && currentUser && currentUser.role === USER_ROLE.MASTER) {
+    unbidItemAssignmentAuctionPage.style.display = 'flex';
+    populateUnbidItemsList(unbidItemsListAuctionPage);
+    populateUnbidItemsTeamsList(unbidItemsTeamsListAuctionPage, unbidItemAssignMessageAuctionPage);
+  } else {
+    unbidItemAssignmentAuctionPage.style.display = 'none';
   }
 }
 
 function updateAuctionDisplay(item) {
   const isMaster = currentUser && currentUser.role === USER_ROLE.MASTER;
-  auctionPageMasterControls.style.display = 'flex'; // 마스터 컨트롤은 항상 보이게
+  auctionPageMasterControls.style.display = isMaster ? 'flex' : 'none';
   document.getElementById('bidButton').style.display = 'none'; // 일반 입찰 버튼은 항상 숨김
 
   if (item && auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
@@ -911,6 +985,7 @@ function updateBidInfo() {
   const team = teams.find((t) => t.id === auctionState.currentBidderTeamId);
   currentBidValue.textContent = auctionState.currentBid.toLocaleString();
   currentBidTeam.textContent = team ? team.name : '없음';
+  timeCountDisplay.textContent = `남은 시간: ${String(auctionState.timer).padStart(2, '0')}초`;
 }
 
 function renderTeamList() {
@@ -922,7 +997,12 @@ function renderTeamList() {
     const teamAvatarSrc = `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(team.name)}`;
 
     let masterBidButtonsHTML = '';
-    if (currentUser && currentUser.role === USER_ROLE.MASTER) {
+    if (
+      currentUser &&
+      currentUser.role === USER_ROLE.MASTER &&
+      auctionState.isAuctionRunning &&
+      !auctionState.isAuctionPaused
+    ) {
       const bidIncrements = [100, 200, 500, 1000];
       masterBidButtonsHTML = `<div class="master-bid-btn-group">${bidIncrements
         .map(
@@ -1115,6 +1195,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeData();
   loadData();
   showPage(currentUser ? (currentUser.role === USER_ROLE.MASTER ? 'masterPage' : 'auctionPage') : 'loginPage');
+
+  if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSettings);
 
   window.addEventListener('storage', (event) => {
     if (['users', 'teams', 'items', 'auctionState'].includes(event.key)) {

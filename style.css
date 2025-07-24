@@ -221,6 +221,12 @@ body {
 .input-group input::placeholder {
   color: var(--light-grey-text);
 }
+.input-group label {
+  width: 100%;
+  margin-bottom: -5px;
+  font-size: 0.9em;
+  color: var(--light-grey-text);
+}
 
 /* Primary Button (General action buttons) */
 .primary-btn {
@@ -326,7 +332,7 @@ body {
   font-size: 1.1em;
   transition: background-color 0.3s ease, transform 0.2s ease;
   min-width: 120px;
-  color: var(--primary-bg);
+  color: white;
   font-weight: bold;
 }
 .auction-master-controls .control-btn.green {
@@ -337,6 +343,9 @@ body {
 }
 .auction-master-controls .control-btn.red {
   background-color: var(--danger-color);
+}
+.auction-master-controls .control-btn.orange {
+  background-color: #f39c12; /* Orange */
 }
 
 .auction-master-controls .control-btn:hover:not(:disabled) {
@@ -350,6 +359,9 @@ body {
 }
 .auction-master-controls .control-btn.red:hover:not(:disabled) {
   background-color: darken(var(--danger-color), 10%);
+}
+.auction-master-controls .control-btn.orange:hover:not(:disabled) {
+  background-color: #e67e22;
 }
 
 .auction-master-controls .control-btn:disabled {
@@ -443,23 +455,19 @@ body {
   margin-bottom: 15px;
 }
 
-/* Unbid Item Assignment Section on Master Page (Original position) */
-#unbidItemAssignmentSection {
-  display: none; /* Hidden by default, shown by JS */
-}
-
 /* --- Auction Page --- */
 .auction-main-grid {
   padding: 30px;
   display: grid;
   grid-template-columns: 1.2fr 2fr 1fr; /* Left, Center, Right columns */
-  grid-template-rows: auto 1fr auto; /* Header, Content, Footer (results) */
+  grid-template-rows: auto 1fr auto auto; /* Header, Content, Unbid, Results */
   gap: 25px;
   flex-grow: 1;
   grid-template-areas:
     'team-list-area auction-item-area participant-grid-area'
     'team-list-area auction-item-area participant-grid-area'
-    'auction-results-section auction-results-section auction-results-section'; /* Results span all columns */
+    'unbid-assignment-area unbid-assignment-area unbid-assignment-area'
+    'auction-results-section auction-results-section auction-results-section';
 }
 
 .auction-panel {
@@ -480,6 +488,11 @@ body {
   padding-bottom: 10px;
   font-size: 1.7em;
   text-align: center;
+}
+
+/* Unbid Item Assignment Section on Auction Page */
+.unbid-item-assignment {
+  grid-area: unbid-assignment-area;
 }
 
 /* Left: Team List Area */
@@ -874,6 +887,7 @@ body {
     grid-template-areas:
       'team-list-area auction-item-area'
       'team-list-area participant-grid-area'
+      'unbid-assignment-area unbid-assignment-area'
       'auction-results-section auction-results-section';
   }
   .participant-grid-area {
@@ -916,6 +930,7 @@ body {
       'auction-item-area'
       'team-list-area'
       'participant-grid-area'
+      'unbid-assignment-area'
       'auction-results-section';
     gap: 20px;
   }
@@ -987,14 +1002,6 @@ body {
   .team-item {
     padding: 12px;
   }
-}
-/* 타이머 추가 버튼 스타일 */
-.auction-master-controls .control-btn.orange {
-  background-color: #f39c12; /* Orange */
-}
-.auction-master-controls .control-btn.orange:hover:not(:disabled) {
-  background-color: #e67e22;
-  transform: translateY(-1px);
 }
 
 /* 참여자 아바타 컨테이너 스타일 (오버레이를 위함) */
