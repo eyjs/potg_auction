@@ -19,7 +19,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: var(--primary-bg);
-  background: url('./resource/bg3.png') no-repeat center center fixed;
+  background: url('../resource/style.css') no-repeat center center fixed;
   background-size: cover;
   display: flex;
   justify-content: center;
