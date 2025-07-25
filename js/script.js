@@ -274,7 +274,7 @@ registerUserBtn.addEventListener('click', () => {
     regUserMessage.classList.add('red');
     return;
   }
-  users.push({
+  const newUser = {
     id: `user_${Date.now()}`,
     username,
     password,
@@ -282,7 +282,10 @@ registerUserBtn.addEventListener('click', () => {
     role: USER_ROLE.GENERAL,
     teamId: null,
     points: 10000,
-  });
+  };
+  users.push(newUser);
+  items.push(makeItemFromUser(newUser)); // 새 사용자에 대한 매물 자동 생성
+
   saveData();
   regUserMessage.textContent = `사용자 '${username}'이(가) 등록되었습니다.`;
   regUserMessage.classList.remove('red');
