@@ -1178,6 +1178,26 @@ function masterBid(teamId, incrementAmount) {
   saveData();
   updateBidInfo();
   renderParticipantGrid();
+  highlightCurrentBidder();
+}
+function highlightCurrentBidder() {
+  const currentBidderTeamId = auctionState.currentBidderTeamId;
+  if (!currentBidderTeamId) return;
+
+  // 모든 팀 아이템에서 강조 제거
+  document.querySelectorAll('.team-item').forEach((card) => {
+    card.classList.remove('highlight');
+  });
+
+  // teams 배열에서 해당 팀 존재 여부 확인 (데이터 확인용)
+  const bidderTeam = teams.find((team) => team.id === currentBidderTeamId);
+  if (!bidderTeam) return;
+
+  // 해당 팀 아이템 DOM 찾기
+  const targetCard = document.querySelector(`.team-item[data-team-id="${bidderTeam.id}"]`);
+  if (targetCard) {
+    targetCard.classList.add('highlight');
+  }
 }
 
 function renderAuctionPage() {
