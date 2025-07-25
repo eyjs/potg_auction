@@ -1209,6 +1209,7 @@ function renderAuctionPage() {
 
   const auctionIsOver = isAuctionEndable();
   const hasUnbidUsers = users.some((u) => u.role === USER_ROLE.GENERAL && u.teamId === null);
+  const hasVacancy = teams.some((t) => t.itemsWon.length < maxTeamItems);
 
   if (auctionIsOver && !auctionState.isAuctionRunning) {
     auctionResultsSection.style.display = 'block';
@@ -1216,7 +1217,7 @@ function renderAuctionPage() {
     auctionResultsSection.style.display = 'none';
   }
 
-  if (auctionIsOver && hasUnbidUsers && currentUser && currentUser.role === USER_ROLE.MASTER) {
+  if (auctionIsOver && hasUnbidUsers && hasVacancy && currentUser?.role === USER_ROLE.MASTER) {
     unbidItemAssignmentAuctionPage.style.display = 'flex';
     populateUnbidItemsList(unbidItemsListAuctionPage);
     populateUnbidItemsTeamsList(unbidItemsTeamsListAuctionPage, unbidItemAssignMessageAuctionPage);
