@@ -1,6 +1,6 @@
 /* 상수 정리 */
 const maxTeamItems = 4; // 팀당 최대 매물 수
-
+const SAMPLE_USER_JSON = 'sample.json';
 // 사용자 역할 상수`
 const USER_ROLE = {
   MASTER: 'master',
@@ -372,18 +372,13 @@ function handleBulkUserUpload(file) {
   reader.readAsText(file);
 }
 downloadSampleUserJsonBtn.addEventListener('click', () => {
-  const sampleData = [
-    { username: 'newUser1', password: 'password123', image: 'images/photo1.jpg' },
-    { username: 'newUser2', password: 'password456', image: '' },
-  ];
-  const jsonString = JSON.stringify(sampleData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+  // a 태그를 임시로 만들어 클릭 → 브라우저가 그대로 파일 다운로드
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sample_users.json';
+  a.href = `./${SAMPLE_USER_JSON}`; // 같은 디렉터리
+  a.download = SAMPLE_USER_JSON; // 저장될 파일명
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 });
 
 // --- 팀 관리 ---
@@ -545,15 +540,12 @@ function handleBulkItemUpload(file) {
 }
 
 downloadSampleItemJsonBtn.addEventListener('click', () => {
-  const sampleData = ['user_1', 'user_2', 'user_3'];
-  const jsonString = JSON.stringify(sampleData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sample_items.json';
+  a.href = `./${SAMPLE_USER_JSON}`; // 같은 디렉터리
+  a.download = SAMPLE_USER_JSON; // 저장될 파일명
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
 });
 
 addItemBtn.addEventListener('click', () => {
