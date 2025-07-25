@@ -1276,6 +1276,7 @@ function showTeamInfoModal(teamId) {
     members.forEach((member) => {
       const item = items.find((i) => i.participantId === member.id);
       const price = item ? item.bidPrice || 0 : 0;
+      const isLeader = member.role === USER_ROLE.TEAM_LEADER;
       const roleText = member.role === USER_ROLE.TEAM_LEADER ? '팀장' : '팀원';
       const userImage = getUserImageUrl(member);
       const tooltipText = `이미지 URL: ${userImage}\n아이디: ${member.username}\n낙찰가격: ${price.toLocaleString()}P`;
@@ -1286,10 +1287,11 @@ function showTeamInfoModal(teamId) {
                             <td>${roleText}</td>
                             <td style="white-space:nowrap;">
                               ${price.toLocaleString()} P
-                              <button class="kick-btn"
-                                      data-user-id="${member.id}"
-                                      data-team-id="${team.id}"
-                                      title="팀에서 제거">×</button>
+                              ${
+                                !isLeader
+                                  ? `<button class="kick-btn" data-user-id="${member.id}" data-team-id="${team.id}" title="팀에서 제거">×</button>`
+                                  : ''
+                              }
                             </td>
                          </tr>`;
     });

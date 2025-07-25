@@ -1198,6 +1198,14 @@ body.auction-ended .auction-wrapper {
   .auction-master-controls {
     flex-direction: column;
   }
+  .auction-master-controls .ctrl-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px; /* 행 간 여백 */
+  }
+  .auction-master-controls .message {
+    margin-top: 0;
+  }
   .bid-button {
     padding: 15px 25px;
     font-size: 1.3em;

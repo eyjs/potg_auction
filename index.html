@@ -197,11 +197,20 @@
               </div>
             </div>
             <div id="auctionPageMasterControls" class="auction-master-controls" style="display: none">
-              <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
-              <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
-              <button id="auctionPageStopAuctionBtn" class="control-btn red">경매 중지</button>
-              <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
-              <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
+              <!-- 1행 -->
+              <div class="ctrl-row">
+                <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
+                <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
+                <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
+              </div>
+
+              <!-- 2행 -->
+              <div class="ctrl-row">
+                <button id="auctionPageStopAuctionBtn" class="control-btn red" style="display: none">경매 중지</button>
+                <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
+              </div>
+
+              <!-- 3행: 로그 -->
               <p id="auctionPageMasterMessage" class="message"></p>
             </div>
             <button id="bidButton" class="bid-button" style="display: none"></button>
