@@ -390,6 +390,8 @@ body.auction-ended .auction-wrapper {
 
 /* Master Auction Controls */
 .auction-master-controls {
+  width: 100%;
+  flex-direction: column;
   display: flex;
   justify-content: center;
   gap: 15px;
@@ -399,8 +401,16 @@ body.auction-ended .auction-wrapper {
   border-radius: 10px;
   border: 1px solid var(--border-color);
   flex-wrap: wrap;
+  align-items: center;
 }
-
+.auction-master-controls .ctrl-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px; /* 행 간 여백 */
+}
+.auction-master-controls .message {
+  margin-top: 0;
+}
 .auction-master-controls .control-btn {
   padding: 12px 25px;
   border: none;
@@ -597,6 +607,8 @@ body.auction-ended .auction-wrapper {
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
+  justify-content: space-between;
+  height: 240px;
 }
 .team-item:hover {
   transform: translateY(-3px);
@@ -671,10 +683,17 @@ body.auction-ended .auction-wrapper {
 .master-bid-btn-group {
   display: flex;
   justify-content: space-around;
-  width: 100%;
+  gap: 8px;
+  height: 40px;
   margin-top: 15px;
   padding-top: 10px;
   border-top: 1px solid var(--border-color);
+  transition: opacity 0.2s ease;
+}
+.master-bid-btn-group.hidden {
+  opacity: 0;
+  visibility: hidden; /* 레이아웃은 유지 */
+  pointer-events: none;
 }
 .master-bid-btn {
   background-color: var(--secondary-bg);
@@ -1195,17 +1214,7 @@ body.auction-ended .auction-wrapper {
     margin-bottom: 10px;
     font-size: 1em;
   }
-  .auction-master-controls {
-    flex-direction: column;
-  }
-  .auction-master-controls .ctrl-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px; /* 행 간 여백 */
-  }
-  .auction-master-controls .message {
-    margin-top: 0;
-  }
+
   .bid-button {
     padding: 15px 25px;
     font-size: 1.3em;

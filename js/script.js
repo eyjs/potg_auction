@@ -1353,7 +1353,13 @@ function renderTeamList() {
       !auctionState.isAuctionPaused
     ) {
       const bidIncrements = [100, 200, 500, 1000];
-      masterBidButtonsHTML = `<div class="master-bid-btn-group">${bidIncrements
+      const shouldShow =
+        currentUser &&
+        currentUser.role === USER_ROLE.MASTER &&
+        auctionState.isAuctionRunning &&
+        !auctionState.isAuctionPaused;
+
+      masterBidButtonsHTML = `<div class="master-bid-btn-group ${shouldShow ? '' : 'hidden'}">${bidIncrements
         .map(
           (amount) => `<button class="master-bid-btn" onclick="masterBid('${team.id}', ${amount})">+${amount}</button>`
         )
