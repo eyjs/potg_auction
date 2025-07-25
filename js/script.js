@@ -1284,7 +1284,13 @@ function showTeamInfoModal(teamId) {
                             <td><img src="${userImage}" alt="${member.username}"></td>
                             <td>${member.username}</td>
                             <td>${roleText}</td>
-                            <td>${price.toLocaleString()} P</td>
+                            <td style="white-space:nowrap;">
+                              ${price.toLocaleString()} P
+                              <button class="kick-btn"
+                                      data-user-id="${member.id}"
+                                      data-team-id="${team.id}"
+                                      title="팀에서 제거">×</button>
+                            </td>
                          </tr>`;
     });
   }
@@ -1293,7 +1299,41 @@ function showTeamInfoModal(teamId) {
   modalTeamMembers.innerHTML = tableHTML;
   teamInfoModal.style.display = 'flex';
 }
+function removeMemberFromTeam(userId, teamId) {
+  const team = teams.find((t) => t.id === teamId);
+  const user = users.find((u) => u.id === userId);
+  if (!team || !user) return;
 
+  /* 1) 매물 복구 */
+  const item = items.find((i) => i.participantId === userId && i.status === 'sold' && i.bidderTeamId === teamId);
+
+  if (item) {
+    team.points += item.bidPrice || 0; // 포인트 환급
+    item.status = 'pending'; // 매물 초기화
+    item.bidPrice = 0;
+    item.bidderTeamId = null;
+  }
+  /*
+      이 매물이 곧바로 다음 차례가 되도록
+      currentAuctionItemIndex 를 "직전 칸"으로 되돌린다
+   */
+  const idx = items.findIndex((i) => i.id === item.id);
+  if (auctionState.isAuctionRunning) {
+    auctionState.currentAuctionItemIndex = (idx - 1 + items.length) % items.length;
+  }
+  /* 2) 팀-데이터 클린업 */
+  team.itemsWon = team.itemsWon.filter((id) => id !== (item ? item.id : ''));
+  user.teamId = null; // 소속 해제
+
+  saveData();
+  renderAuctionPage(); // 경매 화면 즉시 갱신
+  if (document.getElementById('masterPage').classList.contains('active')) {
+    updateMasterPageLists(); // 마스터 페이지도 열려 있으면 갱신
+  }
+
+  /* 3) 모달 내용 새로고침 */
+  showTeamInfoModal(teamId);
+}
 function renderTeamList() {
   teamListContainer.innerHTML = '';
   teams.forEach((team) => {
@@ -1483,6 +1523,16 @@ document.addEventListener('DOMContentLoaded', () => {
     teamInfoModal.addEventListener('click', (e) => {
       if (e.target === teamInfoModal) teamInfoModal.style.display = 'none';
     });
+  modalTeamMembers.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('kick-btn')) return;
+
+    const userId = e.target.dataset.userId;
+    const teamId = e.target.dataset.teamId;
+    if (confirm('해당 인원을 팀에서 제거하시겠습니까?')) {
+      removeMemberFromTeam(userId, teamId);
+    }
+  });
+
   document.getElementById('resetDataBtn')?.addEventListener('click', resetAllData);
   window.addEventListener('storage', (event) => {
     if (['users', 'teams', 'items', 'auctionState'].includes(event.key)) {
