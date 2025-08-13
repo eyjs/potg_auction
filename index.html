@@ -169,85 +169,93 @@
             </div>
           </div>
         </header>
-        <main class="auction-main-grid">
-          <section class="auction-panel team-list-area">
-            <h2>참여 팀 현황</h2>
-            <div id="teamListContainer" class="team-list-grid"></div>
-          </section>
-          <section class="auction-panel auction-item-area">
-            <div class="auction-item-box">
-              <p id="noItemMessage" class="no-item-message" style="display: none">현재 진행 중인 매물이 없습니다.</p>
-              <div class="item-visual-area">
-                <img
-                  id="currentItemImage"
-                  src=""
-                  alt="경매 매물 이미지"
-                  class="auction-item-image"
-                  style="display: none"
-                />
-              </div>
-              <div class="item-info-area">
-                <h2 id="currentItemName"></h2>
-                <p id="currentItemDescription"></p>
-                <div id="currentBidInfo" class="bid-info" style="display: none">
-                  <p>현재가: <span id="currentBidValue">0</span> P</p>
-                  <p>최고 입찰 팀: <span id="currentBidTeam">없음</span></p>
-                  <p id="timeCount" class="time-count">남은 시간: 00초</p>
+        <main>
+          <div id="auctionInProgressContainer" class="auction-main-grid">
+            <section class="auction-panel team-list-area">
+              <h2>참여 팀 현황</h2>
+              <div id="teamListContainer" class="team-list-grid"></div>
+            </section>
+            <section class="auction-panel auction-item-area">
+              <div class="auction-item-box">
+                <p id="noItemMessage" class="no-item-message" style="display: none">현재 진행 중인 매물이 없습니다.</p>
+                <div class="item-visual-area">
+                  <img
+                    id="currentItemImage"
+                    src=""
+                    alt="경매 매물 이미지"
+                    class="auction-item-image"
+                    style="display: none"
+                  />
+                </div>
+                <div class="item-info-area">
+                  <h2 id="currentItemName"></h2>
+                  <p id="currentItemDescription"></p>
+                  <div id="currentBidInfo" class="bid-info" style="display: none">
+                    <p>현재가: <span id="currentBidValue">0</span> P</p>
+                    <p>최고 입찰 팀: <span id="currentBidTeam">없음</span></p>
+                    <p id="timeCount" class="time-count">남은 시간: 00초</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div id="auctionPageMasterControls" class="auction-master-controls" style="display: none">
-              <!-- 1행 -->
-              <div class="ctrl-row">
-                <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
-                <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
-                <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
-              </div>
+              <div id="auctionPageMasterControls" class="auction-master-controls" style="display: none">
+                <!-- 1행 -->
+                <div class="ctrl-row">
+                  <button id="auctionPageStartAuctionBtn" class="control-btn green">경매 시작</button>
+                  <button id="auctionPageNextAuctionBtn" class="control-btn blue">다음 매물</button>
+                  <button id="addTimeBtnAuctionPage" class="control-btn orange">+10초</button>
+                </div>
 
-              <!-- 2행 -->
-              <div class="ctrl-row">
-                <button id="auctionPageStopAuctionBtn" class="control-btn red" style="display: none">경매 중지</button>
-                <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
-              </div>
-              <div class="ctrl-row">
-                <p id="auctionPageMasterMessage" class="message"></p>
-              </div>
+                <!-- 2행 -->
+                <div class="ctrl-row">
+                  <button id="auctionPageStopAuctionBtn" class="control-btn red" style="display: none">경매 중지</button>
+                  <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
+                </div>
+                <div class="ctrl-row">
+                  <p id="auctionPageMasterMessage" class="message"></p>
+                </div>
 
-              <!-- 3행: 로그 -->
-            </div>
-            <button id="bidButton" class="bid-button" style="display: none"></button>
-          </section>
-          <section class="auction-panel participant-grid-area">
-            <h2>참여자 현황</h2>
-            <div id="participantGrid" class="participant-grid"></div>
-          </section>
-          <section
-            id="unbidItemAssignmentAuctionPage"
-            class="master-section unbid-item-assignment"
-            style="display: none"
-          >
-            <h2>유찰 인원 배정</h2>
-            <p class="description">왼쪽에서 유찰된 인원을 끌어와 오른쪽 팀에 놓아 배정하세요.</p>
-            <div class="dnd-container">
-              <div class="dnd-list-box">
-                <h3>유찰 인원</h3>
-                <ul id="unbidItemsListAuctionPage" class="dnd-list"></ul>
+                <!-- 3행: 로그 -->
               </div>
-              <div class="dnd-list-box">
-                <h3>팀 목록 (배정)</h3>
-                <ul id="unbidItemsTeamsListAuctionPage" class="dnd-list drop-target"></ul>
+              <button id="bidButton" class="bid-button" style="display: none"></button>
+            </section>
+            <section class="auction-panel participant-grid-area">
+              <h2>참여자 현황</h2>
+              <div id="participantGrid" class="participant-grid"></div>
+            </section>
+          </div>
+          <div id="unbidAssignmentContainer" style="display: none; padding: 30px;">
+            <section
+              id="unbidItemAssignmentAuctionPage"
+              class="master-section unbid-item-assignment"
+            >
+              <h2>유찰 인원 배정</h2>
+              <p class="description">왼쪽에서 유찰된 인원을 끌어와 오른쪽 팀에 놓아 배정하세요.</p>
+              <div class="dnd-container">
+                <div class="dnd-list-box">
+                  <h3>유찰 인원</h3>
+                  <ul id="unbidItemsListAuctionPage" class="dnd-list"></ul>
+                </div>
+                <div class="dnd-list-box">
+                  <h3>팀 목록 (배정)</h3>
+                  <ul id="unbidItemsTeamsListAuctionPage" class="dnd-list drop-target"></ul>
+                </div>
               </div>
-            </div>
-            <p id="unbidItemAssignMessageAuctionPage" class="message"></p>
-          </section>
-          <section id="auctionResultsSection" class="auction-results-section" style="display: none">
-            <h2>경매 결과</h2>
-            <p>경매가 모두 종료되었습니다. 아래 버튼을 통해 결과를 다운로드할 수 있습니다.</p>
-            <div class="button-group">
-              <button id="downloadTeamResultsBtn" class="download-btn yellow">팀별 배치 결과 다운로드 (HTML)</button>
-              <button id="downloadJsonDataBtn" class="download-btn purple">전체 데이터 다운로드 (JSON)</button>
-            </div>
-          </section>
+              <p id="unbidItemAssignMessageAuctionPage" class="message"></p>
+            </section>
+          </div>
+          <div id="auctionResultsContainer" style="display: none; padding: 30px;">
+            <section id="auctionResultsSection" class="auction-results-section">
+              <div class="results-header">
+                <h2>경매 최종 결과</h2>
+                <div class="button-group">
+                  <button id="printResultsBtn" class="secondary-btn">인쇄</button>
+                  <button id="downloadJsonDataBtn" class="secondary-btn purple">JSON 다운로드</button>
+                </div>
+              </div>
+              <div id="resultsTableContainer"></div>
+              <button id="restartAuctionBtn" class="primary-btn full-width-btn">경매 재시작</button>
+            </section>
+          </div>
         </main>
       </div>
     </div>
@@ -258,6 +266,6 @@
         <div id="modalTeamMembers" class="modal-table-container"></div>
       </div>
     </div>
-    <script src="./js/script.js"></script>
+    <script src="/js/main.js" type="module"></script>
   </body>
 </html>

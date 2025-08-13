@@ -989,68 +989,168 @@ body.auction-ended .auction-wrapper {
 }
 
 /* --- Auction Results Section --- */
+.master-section {
+  background-color: var(--primary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 5px 15px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Auction Results Section --- */
 .auction-results-section {
-  grid-area: auction-results-section; /* Spans all 3 columns */
   background-color: var(--primary-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 30px;
-  margin-top: 25px; /* Space from above sections */
   box-shadow: 0 5px 15px var(--shadow-color);
-  text-align: center;
-  display: none; /* Hidden by default */
 }
 
-.auction-results-section h2 {
-  color: var(--accent-color);
-  font-size: 2em;
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
   border-bottom: 2px solid var(--border-color);
-  padding-bottom: 10px;
+  padding-bottom: 15px;
 }
 
-.auction-results-section p {
-  font-size: 1.1em;
-  color: var(--light-grey-text);
-  margin-bottom: 30px;
+.results-header h2 {
+  color: var(--accent-color);
+  font-size: 2em;
+  margin: 0;
 }
 
-.button-group {
+.results-header .button-group {
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.download-btn {
-  padding: 15px 30px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1.2em;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  color: var(--primary-bg);
+#resultsTableContainer {
+  margin-bottom: 30px;
+  overflow-x: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--text-color);
+  background-color: var(--secondary-bg);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.results-table th,
+.results-table td {
+  padding: 15px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.results-table thead th {
+  background-color: var(--primary-bg);
+  color: var(--accent-color);
+  font-size: 1.1em;
+}
+
+.results-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.results-table tbody tr:hover {
+  background-color: #4f555e;
+}
+
+.results-table .points-cell {
   font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: var(--success-color);
+  font-size: 1.1em;
 }
 
-.download-btn.yellow {
-  background-color: #f1c40f;
-} /* Sun Flower */
-.download-btn.yellow:hover {
-  background-color: #f39c12;
-  transform: translateY(-2px);
+.results-table .members-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.download-btn.purple {
+.results-table .members-list li {
+  margin-bottom: 5px;
+}
+
+.results-table .role-leader {
+  color: var(--warning-color);
+  font-weight: bold;
+}
+
+.results-table .price-tag {
+  color: var(--danger-color);
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.primary-btn.full-width-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2em;
+}
+
+.secondary-btn.purple {
   background-color: #9b59b6;
-} /* Amethyst */
-.download-btn.purple:hover {
+  border-color: #9b59b6;
+  color: white;
+}
+.secondary-btn.purple:hover {
   background-color: #8e44ad;
-  transform: translateY(-2px);
 }
 
 /* --- Team Info Modal Styles --- */
+
+@media print {
+  body,
+  .app-container,
+  #auctionPage {
+    background: white !important;
+    color: black !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+
+  .page-header,
+  #unbidAssignmentContainer,
+  #auctionInProgressContainer,
+  .results-header .button-group,
+  #restartAuctionBtn {
+    display: none !important;
+  }
+
+  #auctionResultsContainer {
+    padding: 0 !important;
+  }
+
+  .results-header h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  .results-table {
+    width: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
