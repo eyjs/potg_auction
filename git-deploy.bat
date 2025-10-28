@@ -12,16 +12,24 @@ set "BUILD_CMD=npm run build"
 set "BUILD_DIR=%SRC_DIR%\dist"
 set "GH_REMOTE=origin"
 set "GH_PAGES_BRANCH=gh-pages"
-
 :: 커밋 메시지: 첫번째 인자 사용, 없으면 timestamp 메시지
 if "%~1"=="" (
-  for /f "tokens=1-3 delims=/:. " %%a in ("%date% %time%") do (
-    set "TS=%%a-%%b-%%c"
+  for /f "tokens=1-4 delims=:. " %%a in ("%time%") do (
+    set hh=%%a
+    set mm=%%b
+    set ss=%%c
   )
+  for /f "tokens=1-3 delims=/- " %%a in ("%date%") do (
+    set yyyy=%%a
+    set mm2=%%b
+    set dd=%%c
+  )
+  set "TS=%yyyy%-%mm2%-%dd%_%hh%-%mm%-%ss%"
   set "MSG=chore: deploy - %TS%"
 ) else (
   set "MSG=%~1"
 )
+
 
 echo ===================================================
 echo Deploy script - commit, push current branch, build and deploy to %GH_PAGES_BRANCH%
