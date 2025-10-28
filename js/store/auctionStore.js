@@ -29,12 +29,8 @@ function makeItemFromUser(user) {
 
 // --- Initial State ---
 function initialState() {
-  const users = ls.get('users', []);
-  if (!users.some((u) => u.id === 'master' && u.role === USER_ROLE.MASTER)) {
-    users.push({ id: 'master', username: 'master', password: 'master', role: USER_ROLE.MASTER, image: null });
-  }
   return {
-    users,
+    users: ls.get('users', []),
     teams: ls.get('teams', []),
     items: ls.get('items', []),
     auctionState: {
@@ -50,7 +46,6 @@ function initialState() {
       auctionDuration: 30,
       bidExtraTime: 10,
     },
-    currentUser: ss.get('currentUser', null),
   };
 }
 
@@ -63,7 +58,6 @@ function persist(partial) {
   if ('teams' in partial) ls.set('teams', state.teams);
   if ('items' in partial) ls.set('items', state.items);
   if ('auctionState' in partial) ls.set('auctionState', state.auctionState);
-  if ('currentUser' in partial) ss.set('currentUser', state.currentUser);
 }
 
 // --- Public API ---
@@ -80,17 +74,150 @@ export const Store = {
   },
 
   actions: {
-    // --- Auth ---
-    login(username, password) {
-      const user = state.users.find((u) => u.username === username && u.password === password);
-      if (user) Store.setState({ currentUser: user });
-      return user;
+    registerUser(username, image) {
+      if (!username) return { success: false, message: '사용자 이름을 입력하세요.' };
+      if (state.users.some(u => u.username === username)) return { success: false, message: '이미 존재하는 사용자 이름입니다.' };
+
+      const newUser = {
+        id: `user_${Date.now()}`,
+        username,
+        image: image || null,
+        role: USER_ROLE.GENERAL,
+        teamId: null,
+      };
+
+      const newUsers = [...state.users, newUser];
+      const newItems = [...state.items, makeItemFromUser(newUser)];
+      Store.setState({ users: newUsers, items: newItems });
+      return { success: true, message: '참여자가 등록되었습니다.' };
     },
 
-    logout() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = null;
-      Store.setState({ currentUser: null });
+    createTeam(teamName) {
+      if (!teamName) return { success: false, message: '팀 이름을 입력하세요.' };
+      if (state.teams.some(t => t.name === teamName)) return { success: false, message: '이미 존재하는 팀 이름입니다.' };
+
+      const newTeam = {
+        id: `team_${Date.now()}`,
+        name: teamName,
+        points: 10000,
+        itemsWon: [],
+        leaderId: null,
+      };
+
+      const newTeams = [...state.teams, newTeam];
+      Store.setState({ teams: newTeams });
+      return { success: true, message: '팀이 생성되었습니다.' };
+    },
+
+    deleteTeam(teamId) {
+      const newTeams = state.teams.filter(t => t.id !== teamId);
+      const newUsers = state.users.map(u => (u.teamId === teamId ? { ...u, teamId: null, role: USER_ROLE.GENERAL } : u));
+      Store.setState({ teams: newTeams, users: newUsers });
+      return { success: true };
+    },
+
+    deleteItem(itemId) {
+        const itemToDelete = state.items.find(i => i.id === itemId);
+        if (!itemToDelete) return { success: false };
+
+        const newItems = state.items.filter(i => i.id !== itemId);
+        const newUsers = state.users.filter(u => u.id !== itemToDelete.participantId);
+        
+        Store.setState({ items: newItems, users: newUsers });
+        return { success: true };
+    },
+
+    assignTeamLeader(userId, teamId) {
+      const newUsers = state.users.map(u => (u.id === userId ? { ...u, role: USER_ROLE.TEAM_LEADER, teamId: teamId } : u));
+      const newTeams = state.teams.map(t => (t.id === teamId ? { ...t, leaderId: userId } : t));
+      Store.setState({ users: newUsers, teams: newTeams });
+    },
+
+    releaseTeamLeader(teamId) {
+      const team = state.teams.find(t => t.id === teamId);
+      if (!team || !team.leaderId) return;
+
+      const newUsers = state.users.map(u => 
+        u.id === team.leaderId 
+          ? { ...u, role: USER_ROLE.GENERAL, teamId: null } 
+          : u
+      );
+      
+      const newTeams = state.teams.map(t => 
+        t.id === teamId 
+          ? { ...t, leaderId: null } 
+          : t
+      );
+
+      Store.setState({ users: newUsers, teams: newTeams });
+    },
+
+    resetAllData() {
+      ls.clear();
+      ss.clear();
+      state = initialState();
+      Store.setState({ ...state }); // Propagate re-render
+    },
+
+    bulkAddUsersAndItems(userData) {
+        if (!Array.isArray(userData)) return { success: false, message: '잘못된 데이터 형식입니다.' };
+
+        const newUsers = [...state.users];
+        const newItems = [...state.items];
+        let addedCount = 0;
+
+        userData.forEach(user => {
+            if (user.username && !state.users.some(u => u.username === user.username)) {
+                const newUser = {
+                    id: `user_${Date.now()}_${user.username.replace(/[^a-zA-Z0-9]/g, '')}`,
+                    username: user.username,
+                    image: user.image || null,
+                    role: USER_ROLE.GENERAL,
+                    teamId: null,
+                };
+                newUsers.push(newUser);
+                newItems.push(makeItemFromUser(newUser));
+                addedCount++;
+            }
+        });
+
+        Store.setState({ users: newUsers, items: newItems });
+        return { success: true, message: `${addedCount}명의 사용자와 매물이 추가되었습니다.` };
+    },
+
+    async scaffoldData() {
+        this.resetAllData();
+        try {
+            const response = await fetch('./sample.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const sampleUsers = await response.json();
+
+            const teams = ['경영지원팀', '마케팅팀', '개발1팀', '개발2팀', '디자인팀'].map(name => ({
+                id: `team_${name}`,
+                name: name,
+                points: 10000,
+                itemsWon: [],
+                leaderId: null,
+            }));
+
+            const users = sampleUsers.map(user => ({
+                id: `user_${user.username.replace(/[^a-zA-Z0-9]/g, '')}`,
+                username: user.username,
+                role: USER_ROLE.GENERAL,
+                image: `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(user.username)}`,
+                teamId: null,
+            }));
+            
+            const items = users.map(makeItemFromUser);
+
+            Store.setState({ users, teams, items });
+            return { success: true, message: '샘플 데이터가 성공적으로 로드되었습니다.' };
+        } catch (error) {
+            console.error('Error loading scaffold data:', error);
+            return { success: false, message: '샘플 데이터를 로드하는 중 오류가 발생했습니다.' };
+        }
     },
 
     // --- Team & User ---
@@ -165,9 +292,7 @@ export const Store = {
 
     areAllUnbidItemsAssigned() {
       const { users, teams } = state;
-      // Condition 1: All general users are assigned to a team
       const allUsersAssigned = !users.some(user => user.role === USER_ROLE.GENERAL && user.teamId === null);
-      // Condition 2: All teams have reached their maximum capacity
       const allTeamsFull = teams.every(team => team.itemsWon.length >= MAX_TEAM_ITEMS);
 
       return allUsersAssigned || allTeamsFull;
@@ -182,7 +307,7 @@ export const Store = {
       if (isAuctionFinished) {
         newItems = state.items.map(i => ({ ...i, status: 'pending', bidderTeamId: null, bidPrice: 0 }));
         newTeams = state.teams.map(t => ({ ...t, itemsWon: [], points: 10000 }));
-        newUsers = state.users.map(u => u.role !== USER_ROLE.MASTER ? { ...u, teamId: null } : u);
+        newUsers = state.users.map(u => ({ ...u, teamId: null }));
       }
 
       Store.setState({
@@ -190,7 +315,7 @@ export const Store = {
         teams: newTeams,
         items: newItems,
         auctionState: {
-          ...state.auctionState, // Keep saved settings
+          ...state.auctionState,
           isAuctionRunning: true,
           isAuctionPaused: true,
           isEnded: false,
@@ -310,9 +435,7 @@ export const Store = {
         } else {
           clearInterval(timerInterval);
           timerInterval = null;
-          if (state.currentUser?.role === USER_ROLE.MASTER) {
-            Store.actions.handleAuctionEndRound();
-          }
+          Store.actions.handleAuctionEndRound();
         }
       }, 1000);
     },

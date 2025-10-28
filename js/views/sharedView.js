@@ -7,24 +7,15 @@ export function showPage(pageId) {
     page.classList.remove('active');
   });
   document.getElementById(pageId).classList.add('active');
-  document.body.classList.toggle('login-page', pageId === 'loginPage');
 
   // Body classes for auction state should only be applied on the auction page
   if (pageId === 'auctionPage') {
     const { auctionState } = window.Store.getState();
     document.body.classList.toggle('auction-running', auctionState.isAuctionRunning);
     document.body.classList.toggle('auction-ended', !auctionState.isAuctionRunning && auctionState.isEnded);
+    renderAuctionPage();
   } else {
     document.body.classList.remove('auction-running', 'auction-ended');
-  }
-
-  const { currentUser } = window.Store.getState();
-  if (pageId === 'auctionPage') {
-    dom.auctionUsernameDisplay.textContent = currentUser ? currentUser.username : '게스트';
-    dom.goToMasterPageBtn.style.display = currentUser && currentUser.role === 'master' ? 'inline-block' : 'none';
-    renderAuctionPage();
-  } else if (pageId === 'masterPage') {
-    dom.masterUsernameDisplay.textContent = currentUser ? currentUser.username : '게스트';
     renderMasterPage();
   }
 }

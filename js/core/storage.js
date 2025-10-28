@@ -16,6 +16,9 @@ export const ls = {
   remove(key) {
     localStorage.removeItem(key);
   },
+  clear() {
+    localStorage.clear();
+  },
 };
 
 export const ss = {
@@ -27,6 +30,9 @@ export const ss = {
   },
   remove(key) {
     sessionStorage.removeItem(key);
+  },
+  clear() {
+    sessionStorage.clear();
   },
 };
 

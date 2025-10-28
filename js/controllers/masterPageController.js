@@ -1,4 +1,5 @@
 import * as dom from '../../domRefs.js';
+import { showPage } from '../views/sharedView.js';
 
 const SAMPLE_USER_JSON = 'sample.json';
 
@@ -58,63 +59,44 @@ function setupDragAndDrop() {
 }
 
 export function initMasterPageController() {
+  dom.goToAuctionPageBtn.addEventListener('click', () => showPage('auctionPage'));
   setupDragAndDrop();
 
   dom.registerUserBtn.addEventListener('click', () => {
-    const { registerUser } = window.Store.actions;
-    const result = registerUser(
+    const result = window.Store.actions.registerUser(
       dom.regUsernameInput.value.trim(),
-      dom.regPasswordInput.value.trim(),
       dom.regUserImage.value.trim()
     );
     dom.regUserMessage.textContent = result.message;
     dom.regUserMessage.className = result.success ? 'message green' : 'message red';
     if (result.success) {
       dom.regUsernameInput.value = '';
-      dom.regPasswordInput.value = '';
       dom.regUserImage.value = '';
     }
   });
 
   dom.createTeamBtn.addEventListener('click', () => {
-    const { createTeam } = window.Store.actions;
-    const result = createTeam(dom.teamNameInput.value.trim());
+    const result = window.Store.actions.createTeam(dom.teamNameInput.value.trim());
     dom.createTeamMessage.textContent = result.message;
     dom.createTeamMessage.className = result.success ? 'message green' : 'message red';
     if (result.success) dom.teamNameInput.value = '';
   });
 
-  dom.addItemBtn.addEventListener('click', () => {
-    const { addItem } = window.Store.actions;
-    const result = addItem(
-      dom.itemNameInput.value.trim(),
-      dom.itemDescInput.value.trim(),
-      dom.itemImageInput.value.trim()
-    );
-    dom.addItemMessage.textContent = result.message;
-    dom.addItemMessage.className = result.success ? 'message green' : 'message red';
-    if (result.success) {
-      dom.itemNameInput.value = '';
-      dom.itemDescInput.value = '';
-      dom.itemImageInput.value = '';
-    }
-  });
-
   dom.createdTeamsList.addEventListener('click', (e) => {
-    if (e.target.matches('button.delete')) {
-      const teamId = e.target.dataset.teamId;
-      if (confirm('정말 이 팀을 삭제하시겠습니까?')) {
-        const result = window.Store.actions.deleteTeam(teamId);
-        if (!result.success) alert(result.message);
-      }
-    }
-  });
+    const button = e.target.closest('button');
+    if (!button) return;
 
-  dom.registeredItemsList.addEventListener('click', (e) => {
-    if (e.target.matches('button.delete')) {
-      const itemId = e.target.dataset.itemId;
-      const result = window.Store.actions.deleteItem(itemId);
-      if (!result.success) alert(result.message);
+    const teamId = button.dataset.teamId;
+    const action = button.dataset.action;
+
+    if (action === 'delete-team') {
+      if (confirm('정말 이 팀을 삭제하시겠습니까? 팀에 속한 모든 정보가 변경됩니다.')) {
+        window.Store.actions.deleteTeam(teamId);
+      }
+    } else if (action === 'release-leader') {
+      if (confirm('이 팀의 팀장을 해제하시겠습니까?')) {
+        window.Store.actions.releaseTeamLeader(teamId);
+      }
     }
   });
 
@@ -142,14 +124,6 @@ export function initMasterPageController() {
     handleFileUpload(dom.jsonUserUploadInput.files[0], dom.bulkUserMessage, window.Store.actions.bulkAddUsersAndItems);
   });
 
-  dom.uploadJsonItemBtn.addEventListener('click', () => {
-    handleFileUpload(
-      dom.jsonItemUploadInput.files[0],
-      dom.bulkItemMessage,
-      window.Store.actions.bulkAddItemsFromUsernames
-    );
-  });
-
   dom.downloadSampleUserJsonBtn.addEventListener('click', () => {
     const a = document.createElement('a');
     a.href = `./${SAMPLE_USER_JSON}`;
@@ -159,20 +133,11 @@ export function initMasterPageController() {
     document.body.removeChild(a);
   });
 
-  dom.downloadSampleItemJsonBtn.addEventListener('click', () => {
-    const a = document.createElement('a');
-    a.href = `./${SAMPLE_USER_JSON}`;
-    a.download = SAMPLE_USER_JSON;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
-
-  dom.scaffoldBtn.addEventListener('click', () => {
+  dom.scaffoldBtn.addEventListener('click', async () => {
     if (confirm('기존 데이터를 모두 초기화하고 테스트 데이터를 생성하시겠습니까?')) {
-      const result = window.Store.actions.scaffoldData();
+      const result = await window.Store.actions.scaffoldData();
       dom.scaffoldMessage.textContent = result.message;
-      dom.scaffoldMessage.className = 'message green';
+      dom.scaffoldMessage.className = result.success ? 'message green' : 'message red';
     }
   });
 }

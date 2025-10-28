@@ -1,6 +1,5 @@
 import { bus } from './core/bus.js';
 import { Store } from './store/auctionStore.js';
-import { initAuthController } from './controllers/authController.js';
 import { initMasterPageController } from './controllers/masterPageController.js';
 import { initAuctionPageController } from './controllers/auctionPageController.js';
 import { renderMasterPage } from './views/masterPageView.js';
@@ -15,38 +14,25 @@ function App() {
     // Central event listener for state changes
     bus.on('state:changed', (e) => {
         console.log('state:changed event received', e);
-        const { currentUser } = Store.getState();
         const activePage = document.querySelector('.page-container.active');
-        
-        if (!activePage) return; // Should not happen
+        if (!activePage) return;
         const currentPageId = activePage.id;
-
-        // If user is logged out, force redirect to login page
-        if (!currentUser && currentPageId !== 'loginPage') {
-            showPage('loginPage');
-            // Optionally show a message
-            document.getElementById('loginMessage').textContent = '로그아웃 되었습니다.';
-            document.getElementById('loginMessage').classList.add('green');
-            return;
-        }
 
         const changedKeys = e.changed || [];
 
         // Re-render the current page to reflect state changes
         if (currentPageId === 'masterPage') {
-            // Only re-render master page if relevant data (users, teams, items) changed
             if (changedKeys.some(key => ['users', 'teams', 'items'].includes(key))) {
                 renderMasterPage();
             }
         } else if (currentPageId === 'auctionPage') {
-            // Always re-render auction page if auctionState or related data changed
             if (changedKeys.some(key => ['auctionState', 'users', 'teams', 'items'].includes(key))) {
                 renderAuctionPage();
             }
         }
     });
 
-        bus.on('item:sold', (data) => {
+    bus.on('item:sold', (data) => {
         const { itemName, winningTeamName, price } = data;
         const message = `<b>${itemName}</b> 님이<br>
          <b>${winningTeamName}</b> 팀에<br>
@@ -55,17 +41,13 @@ function App() {
     });
 
     // Initialize all controllers to set up event listeners
-    initAuthController();
     initMasterPageController();
     initAuctionPageController();
 
-    // Set the initial page based on the current state
-    const { currentUser } = Store.getState();
-    if (currentUser) {
-        showPage(currentUser.role === 'master' ? 'masterPage' : 'auctionPage');
-    } else {
-        showPage('loginPage');
-    }
+    // Set the initial page
+    renderMasterPage();
+    renderAuctionPage();
+    showPage('masterPage');
 }
 
 // Start the application
