@@ -8,51 +8,34 @@
   </head>
   <body>
     <div class="app-container">
-      <div id="loginPage" class="page-container active" style="background: transparent">
-        <div class="login-box">
-          <h2>경매 시스템</h2>
-          <input type="text" id="loginUsername" placeholder="사용자 이름" value="master" />
-          <input type="password" id="loginPassword" placeholder="비밀번호" value="master" />
-          <button id="loginBtn">로그인</button>
-          <p id="loginMessage" class="message"></p>
-        </div>
-      </div>
-
-      <div id="masterPage" class="page-container">
+      <div id="masterPage" class="page-container active">
         <header class="page-header">
           <h1 class="page-title">마스터 페이지</h1>
           <div>
-            <div class="header-right">
-              <span class="user-display">로그인: <span id="masterUsernameDisplay"></span></span>
-            </div>
-            <div>
-              <button id="goToAuctionPageBtn" class="secondary-btn" style="margin-right: 10px; display: inline-block">
-                경매 페이지로 이동
-              </button>
-              <button id="resetDataBtn" class="btn logout">❗ 데이터 리셋</button>
-              <button id="logoutBtnMaster" class="btn logout">로그아웃</button>
-            </div>
+            <button id="goToAuctionPageBtn" class="secondary-btn" style="margin-right: 10px; display: inline-block">
+              경매 페이지로 이동
+            </button>
+            <button id="resetDataBtn" class="btn logout">❗ 데이터 리셋</button>
           </div>
         </header>
         <main class="master-main-grid">
           <section class="master-section user-management">
-            <h2>사용자 관리</h2>
+            <h2>참여자 관리</h2>
             <div class="input-group">
-              <input type="text" id="regUsername" placeholder="새 사용자 이름" />
-              <input type="password" id="regPassword" placeholder="비밀번호" />
+              <input type="text" id="regUsername" placeholder="참여자 이름" />
             </div>
             <div class="input-group" style="margin-top: 10px">
               <input
                 type="text"
                 id="regUserImage"
-                placeholder="이미지 경로 (예: images/user.png)"
+                placeholder="이미지 경로 (선택 사항)"
                 style="width: 100%"
               />
             </div>
-            <button id="registerUserBtn" class="primary-btn" style="width: 100%; margin-top: 10px">사용자 등록</button>
+            <button id="registerUserBtn" class="primary-btn" style="width: 100%; margin-top: 10px">참여자 등록</button>
             <p id="regUserMessage" class="message"></p>
 
-            <h3 style="margin-top: 25px">사용자 일괄 등록 (JSON)</h3>
+            <h3 style="margin-top: 25px">참여자 일괄 등록 (JSON)</h3>
             <div class="input-group">
               <label
                 for="jsonUserUploadInput"
@@ -85,41 +68,6 @@
             <ul id="createdTeamsList" class="list-display"></ul>
           </section>
 
-          <section class="master-section item-management">
-            <h2>매물 관리</h2>
-            <div class="input-group">
-              <input type="text" id="itemNameInput" placeholder="매물 이름" />
-              <input type="text" id="itemDescInput" placeholder="매물 설명 (선택 사항)" />
-            </div>
-            <div class="input-group" style="margin-top: 10px">
-              <input type="text" id="itemImageInput" placeholder="매물 이미지 URL (선택 사항)" style="width: 100%" />
-            </div>
-            <button id="addItemBtn" class="primary-btn" style="width: 100%; margin-top: 10px">매물 추가</button>
-            <p id="addItemMessage" class="message"></p>
-
-            <h3 style="margin-top: 25px">매물(참여자) 일괄 등록 (JSON)</h3>
-            <p class="description" style="margin-bottom: 10px">
-              사용자 이름 목록이 담긴 JSON 파일을 업로드하여 경매 매물을 일괄 생성합니다.
-            </p>
-            <div class="input-group">
-              <label
-                for="jsonItemUploadInput"
-                class="secondary-btn"
-                style="text-align: center; cursor: pointer; margin-top: 0; flex: 1"
-                >JSON 파일 선택</label
-              >
-              <input type="file" id="jsonItemUploadInput" accept=".json" style="display: none" />
-              <button id="uploadJsonItemBtn" class="primary-btn" style="flex: 1">업로드</button>
-            </div>
-            <button id="downloadSampleItemJsonBtn" class="secondary-btn" style="width: 100%; margin-top: 10px">
-              샘플 파일 다운로드
-            </button>
-            <p id="bulkItemMessage" class="message"></p>
-
-            <h3>등록된 매물 목록</h3>
-            <ul id="registeredItemsList" class="list-display"></ul>
-          </section>
-
           <section class="master-section team-leader-assignment">
             <h2>팀장 배정</h2>
             <p class="description">사용자를 마우스로 드래그해서 아래쪽 팀에 놓아 팀장으로 배정하세요.</p>
@@ -134,11 +82,9 @@
               </div>
             </div>
             <p id="dndAssignMessage" class="message"></p>
-            <h3>현재 팀장 목록</h3>
-            <ul id="currentTeamLeadersList" class="list-display"></ul>
           </section>
 
-          <section class="master-section">
+          <section class="master-section settings-section">
             <h2>변수값 설정</h2>
             <div class="input-group" style="flex-direction: column">
               <label for="auctionDurationInput">기본 경매 시간 (초)</label>
@@ -158,15 +104,9 @@
         <header class="page-header">
           <h1 class="page-title">경매 진행</h1>
           <div>
-            <div class="header-right">
-              <span class="user-display">로그인: <span id="auctionUsernameDisplay"></span></span>
-            </div>
-            <div>
-              <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">
-                관리자 패널로 이동
-              </button>
-              <button id="logoutBtnAuction" class="btn logout">로그아웃</button>
-            </div>
+            <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">
+              관리자 패널로 이동
+            </button>
           </div>
         </header>
         <main>

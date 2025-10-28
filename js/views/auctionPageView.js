@@ -25,9 +25,8 @@ function updateBidInfo() {
 }
 
 function updateAuctionDisplay(item) {
-    const { currentUser, auctionState } = window.Store.getState();
-    const isMaster = currentUser && currentUser.role === 'master';
-    dom.auctionPageMasterControls.style.display = isMaster ? 'flex' : 'none';
+    const { auctionState } = window.Store.getState();
+    dom.auctionPageMasterControls.style.display = 'flex';
 
     if (item && auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
         dom.noItemMessage.style.display = 'none';
@@ -52,7 +51,7 @@ function updateAuctionDisplay(item) {
 }
 
 function renderTeamList() {
-    const { teams, users, auctionState, currentUser } = window.Store.getState();
+    const { teams, users, auctionState } = window.Store.getState();
     dom.teamListContainer.innerHTML = '';
     teams.forEach((team) => {
         const teamLeader = users.find((u) => u.id === team.leaderId);
@@ -62,7 +61,7 @@ function renderTeamList() {
         const teamAvatarSrc = `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(team.name)}`;
 
         let masterBidButtonsHTML = '';
-        if (currentUser?.role === 'master' && auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
+        if (auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
             const bidIncrements = [100, 200, 500, 1000];
             masterBidButtonsHTML = `<div class="master-bid-btn-group">${bidIncrements
                 .map((amount) => `<button class="master-bid-btn" data-team-id="${team.id}" data-amount="${amount}">+${amount}</button>`)
@@ -150,11 +149,13 @@ function highlightCurrentBidder() {
 
 function updateAuctionControls() {
     const { items, teams, auctionState } = window.Store.getState();
-    const isEnded = items.every((item) => item.status !== 'pending') || teams.every((team) => team.itemsWon.length >= MAX_TEAM_ITEMS);
+    const isEnded = (items.length > 0 && items.every((item) => item.status !== 'pending')) || teams.every((team) => team.itemsWon.length >= MAX_TEAM_ITEMS);
     const canStart = !auctionState.isAuctionRunning || isEnded;
     const canStop = auctionState.isAuctionRunning;
     const canNext = auctionState.isAuctionRunning && auctionState.isAuctionPaused && !isEnded;
     const canAddTime = auctionState.isAuctionRunning && !auctionState.isAuctionPaused;
+
+    console.log({ isEnded, canStart, isAuctionRunning: auctionState.isAuctionRunning, isAuctionPaused: auctionState.isAuctionPaused });
 
     if (dom.auctionPageStartAuctionBtn) dom.auctionPageStartAuctionBtn.disabled = !canStart;
     if (dom.auctionPageStopAuctionBtn) dom.auctionPageStopAuctionBtn.disabled = !canStop;

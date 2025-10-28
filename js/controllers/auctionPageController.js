@@ -34,6 +34,7 @@ function setupAuctionDragAndDrop() {
 }
 
 export function initAuctionPageController() {
+  dom.goToMasterPageBtn.addEventListener('click', () => showPage('masterPage'));
   setupAuctionDragAndDrop();
 
   dom.auctionPageStartAuctionBtn.addEventListener('click', () => window.Store.actions.startAuction());
