@@ -62,6 +62,7 @@ export const downloadJsonDataBtn = document.getElementById('downloadJsonDataBtn'
 export const auctionPageMasterControls = document.getElementById('auctionPageMasterControls');
 export const auctionPageStartAuctionBtn = document.getElementById('auctionPageStartAuctionBtn');
 export const auctionPageNextAuctionBtn = document.getElementById('auctionPageNextAuctionBtn');
+export const togglePauseAuctionBtn = document.getElementById('togglePauseAuctionBtn');
 export const auctionPageEndAuctionBtn = document.getElementById('auctionPageEndAuctionBtn');
 export const addTimeBtnAuctionPage = document.getElementById('addTimeBtnAuctionPage');
 export const auctionPageMasterMessage = document.getElementById('auctionPageMasterMessage');

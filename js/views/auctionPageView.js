@@ -28,7 +28,15 @@ function updateAuctionDisplay(item) {
     const { auctionState } = window.Store.getState();
     dom.auctionPageMasterControls.style.display = 'flex';
 
-    if (item && auctionState.isAuctionRunning && !auctionState.isAuctionPaused) {
+    if (dom.togglePauseAuctionBtn) {
+        dom.togglePauseAuctionBtn.textContent = auctionState.isAuctionPaused ? '재개' : '일시 정지';
+    }
+    if (dom.timeCountDisplay) {
+        dom.timeCountDisplay.classList.toggle('paused', auctionState.isAuctionPaused);
+    }
+
+    if (item && auctionState.isAuctionRunning) {
+        // 경매가 진행 중이고 아이템이 있을 때
         dom.noItemMessage.style.display = 'none';
         dom.currentItemImage.src = getItemImageUrl(item);
         dom.currentItemImage.style.display = 'block';
@@ -39,12 +47,22 @@ function updateAuctionDisplay(item) {
         dom.currentItemDescription.textContent = item.description || '설명 없음';
         dom.currentBidInfo.style.display = 'flex';
         updateBidInfo();
-    } else {
+    } else if (auctionState.isAuctionRunning) {
+        // 경매가 진행 중이지만 아이템이 없을 때 (예: 다음 아이템으로 넘어가는 중)
         dom.noItemMessage.style.display = 'block';
+        dom.noItemMessage.textContent = '다음 매물을 준비 중입니다...';
         dom.currentItemImage.style.display = 'none';
         dom.currentBidInfo.style.display = 'none';
         dom.currentItemName.textContent = '경매 대기 중';
-        dom.currentItemDescription.textContent = window.Store.getState().auctionState.isEnded
+        dom.currentItemDescription.textContent = '마스터가 다음 경매를 시작합니다.';
+    } else {
+        // 경매가 시작되지 않았거나 종료되었을 때
+        dom.noItemMessage.style.display = 'block';
+        dom.noItemMessage.textContent = '현재 진행 중인 매물이 없습니다.';
+        dom.currentItemImage.style.display = 'none';
+        dom.currentBidInfo.style.display = 'none';
+        dom.currentItemName.textContent = '경매 대기 중';
+        dom.currentItemDescription.textContent = auctionState.isEnded
             ? '경매가 모두 종료되었습니다.'
             : '마스터가 경매를 시작합니다.';
     }
@@ -154,14 +172,14 @@ function updateAuctionControls() {
     const canStop = auctionState.isAuctionRunning;
     const canNext = auctionState.isAuctionRunning && auctionState.isAuctionPaused && !isEnded;
     const canAddTime = auctionState.isAuctionRunning && !auctionState.isAuctionPaused;
-
-    console.log({ isEnded, canStart, isAuctionRunning: auctionState.isAuctionRunning, isAuctionPaused: auctionState.isAuctionPaused });
+    const canPause = auctionState.isAuctionRunning && !isEnded;
 
     if (dom.auctionPageStartAuctionBtn) dom.auctionPageStartAuctionBtn.disabled = !canStart;
     if (dom.auctionPageStopAuctionBtn) dom.auctionPageStopAuctionBtn.disabled = !canStop;
     if (dom.auctionPageEndAuctionBtn) dom.auctionPageEndAuctionBtn.disabled = !canStop;
     if (dom.auctionPageNextAuctionBtn) dom.auctionPageNextAuctionBtn.disabled = !canNext;
     if (dom.addTimeBtnAuctionPage) dom.addTimeBtnAuctionPage.disabled = !canAddTime;
+    if (dom.togglePauseAuctionBtn) dom.togglePauseAuctionBtn.disabled = !canPause;
 }
 
 export function populateUnbidItemsList(listElement) {

@@ -1392,3 +1392,14 @@ body.auction-ended .auction-wrapper {
     padding: 12px;
   }
 }
+
+.time-count.paused {
+  color: var(--danger-color);
+  animation: blink-red 1s infinite;
+}
+
+@keyframes blink-red {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

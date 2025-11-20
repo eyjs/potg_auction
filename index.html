@@ -25,12 +25,7 @@
               <input type="text" id="regUsername" placeholder="참여자 이름" />
             </div>
             <div class="input-group" style="margin-top: 10px">
-              <input
-                type="text"
-                id="regUserImage"
-                placeholder="이미지 경로 (선택 사항)"
-                style="width: 100%"
-              />
+              <input type="text" id="regUserImage" placeholder="이미지 경로 (선택 사항)" style="width: 100%" />
             </div>
             <button id="registerUserBtn" class="primary-btn" style="width: 100%; margin-top: 10px">참여자 등록</button>
             <p id="regUserMessage" class="message"></p>
@@ -104,9 +99,7 @@
         <header class="page-header">
           <h1 class="page-title">경매 진행</h1>
           <div>
-            <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">
-              관리자 패널로 이동
-            </button>
+            <button id="goToMasterPageBtn" class="secondary-btn" style="margin-right: 10px">관리자 패널로 이동</button>
           </div>
         </header>
         <main>
@@ -147,7 +140,10 @@
 
                 <!-- 2행 -->
                 <div class="ctrl-row">
-                  <button id="auctionPageStopAuctionBtn" class="control-btn red" style="display: none">경매 중지</button>
+                  <button id="auctionPageStopAuctionBtn" class="control-btn red" style="display: none">
+                    경매 중지
+                  </button>
+                  <button id="togglePauseAuctionBtn" class="control-btn orange">일시 정지</button>
                   <button id="auctionPageEndAuctionBtn" class="control-btn red">경매 종료</button>
                 </div>
                 <div class="ctrl-row">
@@ -163,11 +159,8 @@
               <div id="participantGrid" class="participant-grid"></div>
             </section>
           </div>
-          <div id="unbidAssignmentContainer" style="display: none; padding: 30px;">
-            <section
-              id="unbidItemAssignmentAuctionPage"
-              class="master-section unbid-item-assignment"
-            >
+          <div id="unbidAssignmentContainer" style="display: none; padding: 30px">
+            <section id="unbidItemAssignmentAuctionPage" class="master-section unbid-item-assignment">
               <h2>유찰 인원 배정</h2>
               <p class="description">왼쪽에서 유찰된 인원을 끌어와 오른쪽 팀에 놓아 배정하세요.</p>
               <div class="dnd-container">
@@ -183,7 +176,7 @@
               <p id="unbidItemAssignMessageAuctionPage" class="message"></p>
             </section>
           </div>
-          <div id="auctionResultsContainer" style="display: none; padding: 30px;">
+          <div id="auctionResultsContainer" style="display: none; padding: 30px">
             <section id="auctionResultsSection" class="auction-results-section">
               <div class="results-header">
                 <h2>경매 최종 결과</h2>

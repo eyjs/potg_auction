@@ -39,6 +39,7 @@ export function initAuctionPageController() {
 
   dom.auctionPageStartAuctionBtn.addEventListener('click', () => window.Store.actions.startAuction());
   dom.auctionPageNextAuctionBtn.addEventListener('click', () => window.Store.actions.nextAuction());
+  dom.togglePauseAuctionBtn.addEventListener('click', () => window.Store.actions.togglePause());
   dom.auctionPageEndAuctionBtn.addEventListener('click', () => window.Store.actions.endAuction());
   dom.addTimeBtnAuctionPage.addEventListener('click', () => window.Store.actions.addTime(10));
 

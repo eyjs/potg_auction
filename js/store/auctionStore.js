@@ -430,9 +430,9 @@ export const Store = {
     startTimer() {
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
-        if (state.auctionState.timer > 0) {
+        if (!state.auctionState.isAuctionPaused && state.auctionState.timer > 0) {
           Store.setState({ auctionState: { ...state.auctionState, timer: state.auctionState.timer - 1 } }, { persist: false });
-        } else {
+        } else if (state.auctionState.timer <= 0) {
           clearInterval(timerInterval);
           timerInterval = null;
           Store.actions.handleAuctionEndRound();
@@ -468,6 +468,11 @@ export const Store = {
         Store.actions.handleAuctionEndRound();
       }
       return { success: true };
+    },
+
+    togglePause() {
+        if (!state.auctionState.isAuctionRunning || state.auctionState.isEnded) return;
+        Store.setState({ auctionState: { ...state.auctionState, isAuctionPaused: !state.auctionState.isAuctionPaused } });
     },
 
     addTime(seconds) {
