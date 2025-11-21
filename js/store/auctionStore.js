@@ -336,7 +336,12 @@ export const Store = {
         return;
       }
 
-      const pendingItems = state.items.map((item, index) => ({ ...item, originalIndex: index })).filter(item => item.status === 'pending');
+      const pendingItems = state.items
+        .map((item, index) => ({ ...item, originalIndex: index }))
+        .filter(item => {
+          const participant = state.users.find(u => u.id === item.participantId);
+          return item.status === 'pending' && participant && participant.role === USER_ROLE.GENERAL;
+        });
       if (pendingItems.length === 0) {
         this.endAuction();
         return;
